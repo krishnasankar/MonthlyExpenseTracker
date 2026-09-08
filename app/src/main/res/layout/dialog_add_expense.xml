@@ -54,7 +54,7 @@
             app:boxCornerRadiusBottomStart="10dp"
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusTopStart="10dp"
-            app:prefixText="$ ">
+            app:prefixText="₹ ">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_amount"

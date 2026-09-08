@@ -34,7 +34,7 @@ public class DonutChartView extends View {
     private final List<Float> startAngles = new ArrayList<>();
 
     private double totalAmount = 0.0;
-    private String currencySymbol = "$";
+    private String currencySymbol = "₹";
     private int selectedIndex = -1;
     private float animationProgress = 1.0f;
     private ValueAnimator animator;
@@ -61,27 +61,38 @@ public class DonutChartView extends View {
     }
 
     private void init() {
+        int surfaceColor = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorSurface, Color.WHITE);
+        int onSurfaceColor = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorOnSurface, Color.parseColor("#212121"));
+        int onSurfaceVariant = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorOnSurfaceVariant, Color.parseColor("#757575"));
+        int primaryColor = com.google.android.material.color.MaterialColors.getColor(
+                this, androidx.appcompat.R.attr.colorPrimary, Color.parseColor("#1E88E5"));
+        int surfaceVariant = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorSurfaceVariant, Color.parseColor("#E0E0E0"));
+
         arcPaint.setStyle(Paint.Style.FILL);
 
         centerHolePaint.setStyle(Paint.Style.FILL);
-        centerHolePaint.setColor(Color.WHITE);
+        centerHolePaint.setColor(surfaceColor);
 
         centerTitlePaint.setTextAlign(Paint.Align.CENTER);
-        centerTitlePaint.setColor(Color.parseColor("#757575"));
+        centerTitlePaint.setColor(onSurfaceVariant);
         centerTitlePaint.setTextSize(spToPx(13));
 
         centerAmountPaint.setTextAlign(Paint.Align.CENTER);
-        centerAmountPaint.setColor(Color.parseColor("#212121"));
+        centerAmountPaint.setColor(onSurfaceColor);
         centerAmountPaint.setFakeBoldText(true);
         centerAmountPaint.setTextSize(spToPx(20));
 
         centerSubtitlePaint.setTextAlign(Paint.Align.CENTER);
-        centerSubtitlePaint.setColor(Color.parseColor("#1E88E5"));
+        centerSubtitlePaint.setColor(primaryColor);
         centerSubtitlePaint.setTextSize(spToPx(12));
 
         emptyRingPaint.setStyle(Paint.Style.STROKE);
         emptyRingPaint.setStrokeWidth(dpToPx(28));
-        emptyRingPaint.setColor(Color.parseColor("#E0E0E0"));
+        emptyRingPaint.setColor(surfaceVariant);
     }
 
     public void setOnCategorySelectedListener(OnCategorySelectedListener listener) {

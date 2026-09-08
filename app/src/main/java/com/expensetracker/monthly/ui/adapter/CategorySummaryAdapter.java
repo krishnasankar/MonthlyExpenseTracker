@@ -19,7 +19,7 @@ import java.util.Locale;
 public class CategorySummaryAdapter extends RecyclerView.Adapter<CategorySummaryAdapter.SummaryViewHolder> {
 
     private final List<CategorySpendSummary> items = new ArrayList<>();
-    private String currencySymbol = "$";
+    private String currencySymbol = "₹";
     private double totalSpend = 0.0;
 
     public void setData(List<CategorySpendSummary> newItems, String currencySymbol, double totalSpend) {

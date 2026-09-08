@@ -26,7 +26,7 @@ public class ExpenseAdapter extends ListAdapter<ExpenseWithDetails, ExpenseAdapt
     }
 
     private final OnExpenseClickListener listener;
-    private String currencySymbol = "$";
+    private String currencySymbol = "₹";
 
     public ExpenseAdapter(OnExpenseClickListener listener) {
         super(DIFF_CALLBACK);

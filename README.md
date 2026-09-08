@@ -35,9 +35,10 @@ A modern, clean, native Android application written in Java to manage personal e
    - **Category Breakdown**: Progress bars showing the exact percentage and dollar amount spent per category.
    - **Recent Transactions**: Quick preview of the most recent expenses in the selected month with direct link to the full list.
 
-4. **Preferences & Demo Data**:
-   - Change currency symbol (`$`, `€`, `£`, `₹`, `¥`).
-   - One-tap "Add Sample Data for Demo" button under Settings to instantly populate sample monthly expenses for demonstration.
+4. **Preferences, Dark Mode & Demo Data**:
+   - **Dark Mode Support**: Full support for System Default, Light Mode, and Dark Mode themes with OLED-optimized contrast.
+   - **Default Currency (INR)**: Pre-configured with Indian Rupee (`₹`) as the default currency on launch, with multi-currency options (`$`, `€`, `£`, `₹`, `¥`).
+   - **Demo Data Generator**: One-tap "Add Sample Data for Demo" button under Settings to instantly populate sample monthly expenses for demonstration.
 
 ---
 

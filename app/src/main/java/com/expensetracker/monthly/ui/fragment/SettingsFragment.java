@@ -46,6 +46,7 @@ public class SettingsFragment extends Fragment {
         dashboardViewModel = new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
 
         setupCurrencyPicker();
+        setupThemePicker();
         setupCategoryManagement();
         setupDemoDataButton();
         setupObservers();
@@ -54,37 +55,64 @@ public class SettingsFragment extends Fragment {
     private void setupCurrencyPicker() {
         String currentCurrency = CurrencyUtils.getCurrencySymbol(requireContext());
         switch (currentCurrency) {
+            case "$":
+                binding.toggleGroupCurrency.check(R.id.btn_curr_usd);
+                break;
             case "€":
                 binding.toggleGroupCurrency.check(R.id.btn_curr_eur);
                 break;
             case "£":
                 binding.toggleGroupCurrency.check(R.id.btn_curr_gbp);
                 break;
-            case "₹":
-                binding.toggleGroupCurrency.check(R.id.btn_curr_inr);
-                break;
             case "¥":
                 binding.toggleGroupCurrency.check(R.id.btn_curr_jpy);
                 break;
             default:
-                binding.toggleGroupCurrency.check(R.id.btn_curr_usd);
+                binding.toggleGroupCurrency.check(R.id.btn_curr_inr);
                 break;
         }
 
         binding.toggleGroupCurrency.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
-                String symbol = "$";
-                if (checkedId == R.id.btn_curr_eur) {
+                String symbol = "₹";
+                if (checkedId == R.id.btn_curr_usd) {
+                    symbol = "$";
+                } else if (checkedId == R.id.btn_curr_eur) {
                     symbol = "€";
                 } else if (checkedId == R.id.btn_curr_gbp) {
                     symbol = "£";
-                } else if (checkedId == R.id.btn_curr_inr) {
-                    symbol = "₹";
                 } else if (checkedId == R.id.btn_curr_jpy) {
                     symbol = "¥";
                 }
                 CurrencyUtils.setCurrencySymbol(requireContext(), symbol);
                 Toast.makeText(requireContext(), "Currency set to " + symbol, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setupThemePicker() {
+        int currentTheme = com.expensetracker.monthly.util.ThemeUtils.getThemeMode(requireContext());
+        if (currentTheme == com.expensetracker.monthly.util.ThemeUtils.THEME_LIGHT) {
+            binding.toggleGroupTheme.check(R.id.btn_theme_light);
+        } else if (currentTheme == com.expensetracker.monthly.util.ThemeUtils.THEME_DARK) {
+            binding.toggleGroupTheme.check(R.id.btn_theme_dark);
+        } else {
+            binding.toggleGroupTheme.check(R.id.btn_theme_system);
+        }
+
+        binding.toggleGroupTheme.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                int mode = com.expensetracker.monthly.util.ThemeUtils.THEME_SYSTEM;
+                String modeName = getString(R.string.theme_system);
+                if (checkedId == R.id.btn_theme_light) {
+                    mode = com.expensetracker.monthly.util.ThemeUtils.THEME_LIGHT;
+                    modeName = getString(R.string.theme_light);
+                } else if (checkedId == R.id.btn_theme_dark) {
+                    mode = com.expensetracker.monthly.util.ThemeUtils.THEME_DARK;
+                    modeName = getString(R.string.theme_dark);
+                }
+                com.expensetracker.monthly.util.ThemeUtils.setThemeMode(requireContext(), mode);
+                Toast.makeText(requireContext(), "Theme set to " + modeName, Toast.LENGTH_SHORT).show();
             }
         });
     }

@@ -11,7 +11,7 @@ public class CurrencyUtils {
 
     private static final String PREF_NAME = "expense_tracker_prefs";
     private static final String KEY_CURRENCY_SYMBOL = "currency_symbol";
-    private static final String DEFAULT_SYMBOL = "$";
+    private static final String DEFAULT_SYMBOL = "₹";
 
     private static final DecimalFormat AMOUNT_FORMAT = new DecimalFormat("#,##0.00");
 

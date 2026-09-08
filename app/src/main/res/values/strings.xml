@@ -56,6 +56,10 @@
     <string name="delete_subcategory_confirm">Are you sure you want to delete subcategory \"%1$s\"?</string>
     <string name="preferences_title">Preferences</string>
     <string name="currency_symbol_label">Currency Symbol</string>
+    <string name="theme_mode_label">App Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="seed_sample_data">Add Sample Data for Demo</string>
     <string name="sample_data_added">Sample data added successfully!</string>
     <string name="error_required_fields">Please fill in all required fields.</string>

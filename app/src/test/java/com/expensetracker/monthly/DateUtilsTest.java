@@ -56,5 +56,8 @@ public class DateUtilsTest {
 
         String zeroFormatted = CurrencyUtils.formatAmount(0.0, "€");
         assertEquals("€ 0.00", zeroFormatted);
+
+        String inrFormatted = CurrencyUtils.formatAmount(9850.50, "₹");
+        assertEquals("₹ 9,850.50", inrFormatted);
     }
 }

@@ -150,8 +150,9 @@ com.expensetracker.monthly
 │       ├── DashboardViewModel.java   # Manages month calendar & aggregate metrics
 │       └── ExpenseViewModel.java     # Manages expense filters, search & CRUD
 └── util
-    ├── CurrencyUtils.java            # Currency symbol preferences & formatting
-    └── DateUtils.java                # Month calculation, timestamp formatting
+    ├── CurrencyUtils.java            # Currency symbol preferences (INR default) & formatting
+    ├── DateUtils.java                # Month calculation, timestamp formatting
+    └── ThemeUtils.java               # Dark Mode, Light Mode, and System Theme manager
 ```
 
 ---
@@ -186,12 +187,18 @@ Rather than introducing heavy third-party charting libraries with jitpack depend
 - **Donut Cutout**: Paints an inner circle hole producing a crisp donut aesthetic.
 - **Center Metric Display**: Renders formatted total spend or selected category details.
 - **Touch Detection**: Converts Cartesian `(x, y)` touch coordinates to polar angles (`Math.atan2`), identifying tapped slices and highlighting the selection with expanded bounds and animation.
+- **Dynamic Theme Resolution**: Resolves `?attr/colorSurface` and `?attr/colorOnSurface` at runtime so the donut cutout and typography seamlessly match Dark Mode and Light Mode.
 
 ### 5.4 Dynamic Subcategory Selection
 In `AddEditExpenseDialogFragment`, the Category selector is an Exposed Dropdown. When a category is selected:
 1. `categoryViewModel.getSubcategoriesForCategory(categoryId)` is observed.
 2. The Subcategory dropdown dynamically populates with the linked subcategories (plus a default "None (Optional)" option).
 3. Switching categories resets the subcategory input to prevent mismatched parent-child relationships.
+
+### 5.5 Dark Mode Architecture & INR Default
+- **Theme Modes**: Supports `System Default`, `Light Mode`, and `Dark Mode` persisted via `ThemeUtils` in `SharedPreferences`.
+- **Dark Mode Resources**: Dual resource qualifier structure (`res/values/` and `res/values-night/`) provides optimized contrast, OLED/dark grey backgrounds (`#121212`, `#1E1E1E`), and brightened category colors for dark environments.
+- **Launch Currency**: Defaults to Indian Rupee (`₹` / INR) upon fresh install, with user overrides available in Settings.
 
 ---
 
