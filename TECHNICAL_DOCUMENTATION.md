@@ -56,8 +56,8 @@ The persistence layer is constructed with **Android Jetpack Room 2.6.1** over SQ
 ```mermaid
 erDiagram
     CATEGORIES ||--o{ SUBCATEGORIES : "1 to N (CASCADE DELETE)"
-    CATEGORIES ||--o{ EXPENSES : "1 to N (CASCADE DELETE)"
-    SUBCATEGORIES ||--o{ EXPENSES : "1 to N (SET NULL ON DELETE)"
+    CATEGORIES ||--o{ EXPENSES : "1 to N (RESTRICT DELETE)"
+    SUBCATEGORIES ||--o{ EXPENSES : "1 to N (RESTRICT DELETE)"
 
     CATEGORIES {
         INTEGER id PK "autoGenerate = true"
@@ -83,15 +83,17 @@ erDiagram
     }
 ```
 
-### 3.2 Key Constraints & Indexes
+### 3.2 Key Constraints & Deletion Protection
 - **`categories` Table**:
   - `name`: Indexed with a `UNIQUE` constraint to prevent duplicate category names.
+  - **Deletion Protection**: A category cannot be deleted if any expense is currently associated with it. The application checks `countExpensesByCategoryId(categoryId)` before deletion and displays a notification with the active count.
 - **`subcategories` Table**:
-  - `category_id`: Foreign key referencing `categories(id)` with `onDelete = ForeignKey.CASCADE`. If a category is removed, all its subcategories are automatically removed.
+  - `category_id`: Foreign key referencing `categories(id)` with `onDelete = ForeignKey.CASCADE`.
   - Compound Index: `[category_id, name]` with `unique = true` prevents duplicate subcategory names within the same parent category.
+  - **Deletion Protection**: A subcategory cannot be deleted if any expense is currently associated with it. The application checks `countExpensesBySubcategoryId(subcategoryId)` before deletion.
 - **`expenses` Table**:
-  - `category_id`: Foreign key to `categories(id)` with `CASCADE`.
-  - `subcategory_id`: Foreign key to `subcategories(id)` with `SET_NULL`. If a subcategory is deleted, associated expenses retain their primary category without data loss.
+  - `category_id`: Foreign key to `categories(id)` with `RESTRICT`.
+  - `subcategory_id`: Foreign key to `subcategories(id)` with `RESTRICT`.
   - `date_millis`: Indexed to optimize date-range queries for monthly summaries.
 
 ### 3.3 Database Pre-population

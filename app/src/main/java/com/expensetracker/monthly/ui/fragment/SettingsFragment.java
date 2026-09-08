@@ -179,11 +179,19 @@ public class SettingsFragment extends Fragment {
                 .setTitle("Delete Category")
                 .setMessage(message)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
-                    categoryViewModel.deleteCategory(category.getId(), () -> {
+                    categoryViewModel.deleteCategory(category.getId(), (deleted, activeExpenseCount) -> {
                         if (isAdded()) {
-                            requireActivity().runOnUiThread(() ->
-                                    Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show()
-                            );
+                            requireActivity().runOnUiThread(() -> {
+                                if (deleted) {
+                                    Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    new AlertDialog.Builder(requireContext())
+                                            .setTitle(R.string.cannot_delete_category_title)
+                                            .setMessage(getString(R.string.cannot_delete_category_message, category.getName(), activeExpenseCount))
+                                            .setPositiveButton(android.R.string.ok, null)
+                                            .show();
+                                }
+                            });
                         }
                     });
                 })
@@ -197,11 +205,19 @@ public class SettingsFragment extends Fragment {
                 .setTitle("Delete Subcategory")
                 .setMessage(message)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
-                    categoryViewModel.deleteSubcategory(subcategory.getId(), () -> {
+                    categoryViewModel.deleteSubcategory(subcategory.getId(), (deleted, activeExpenseCount) -> {
                         if (isAdded()) {
-                            requireActivity().runOnUiThread(() ->
-                                    Toast.makeText(requireContext(), "Subcategory deleted", Toast.LENGTH_SHORT).show()
-                            );
+                            requireActivity().runOnUiThread(() -> {
+                                if (deleted) {
+                                    Toast.makeText(requireContext(), "Subcategory deleted", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    new AlertDialog.Builder(requireContext())
+                                            .setTitle(R.string.cannot_delete_subcategory_title)
+                                            .setMessage(getString(R.string.cannot_delete_subcategory_message, subcategory.getName(), activeExpenseCount))
+                                            .setPositiveButton(android.R.string.ok, null)
+                                            .show();
+                                }
+                            });
                         }
                     });
                 })

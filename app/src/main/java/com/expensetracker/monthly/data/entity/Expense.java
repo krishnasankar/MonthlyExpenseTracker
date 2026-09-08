@@ -17,13 +17,13 @@ import java.util.Objects;
             entity = Category.class,
             parentColumns = "id",
             childColumns = "category_id",
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.RESTRICT
         ),
         @ForeignKey(
             entity = Subcategory.class,
             parentColumns = "id",
             childColumns = "subcategory_id",
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.RESTRICT
         )
     },
     indices = {

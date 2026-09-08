@@ -75,6 +75,9 @@ public interface ExpenseDao {
     @Query("SELECT COUNT(*) FROM expenses WHERE category_id = :categoryId")
     int countExpensesByCategoryId(long categoryId);
 
+    @Query("SELECT COUNT(*) FROM expenses WHERE subcategory_id = :subcategoryId")
+    int countExpensesBySubcategoryId(long subcategoryId);
+
     @Query("DELETE FROM expenses")
     void deleteAll();
 }

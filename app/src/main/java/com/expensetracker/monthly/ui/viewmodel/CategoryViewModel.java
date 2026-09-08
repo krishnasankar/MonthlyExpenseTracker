@@ -42,15 +42,15 @@ public class CategoryViewModel extends AndroidViewModel {
         repository.insertCategory(category, listener);
     }
 
-    public void deleteCategory(long categoryId, Runnable onComplete) {
-        repository.deleteCategory(categoryId, onComplete);
+    public void deleteCategory(long categoryId, ExpenseRepository.OnDeleteCheckListener listener) {
+        repository.deleteCategory(categoryId, listener);
     }
 
     public void insertSubcategory(Subcategory subcategory, Runnable onComplete) {
         repository.insertSubcategory(subcategory, onComplete);
     }
 
-    public void deleteSubcategory(long subcategoryId, Runnable onComplete) {
-        repository.deleteSubcategory(subcategoryId, onComplete);
+    public void deleteSubcategory(long subcategoryId, ExpenseRepository.OnDeleteCheckListener listener) {
+        repository.deleteSubcategory(subcategoryId, listener);
     }
 }

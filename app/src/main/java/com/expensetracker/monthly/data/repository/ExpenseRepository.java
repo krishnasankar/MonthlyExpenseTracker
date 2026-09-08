@@ -52,11 +52,18 @@ public class ExpenseRepository {
         });
     }
 
-    public void deleteCategory(long categoryId, Runnable onComplete) {
+    public void deleteCategory(long categoryId, OnDeleteCheckListener listener) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            categoryDao.deleteById(categoryId);
-            if (onComplete != null) {
-                onComplete.run();
+            int count = expenseDao.countExpensesByCategoryId(categoryId);
+            if (count > 0) {
+                if (listener != null) {
+                    listener.onResult(false, count);
+                }
+            } else {
+                categoryDao.deleteById(categoryId);
+                if (listener != null) {
+                    listener.onResult(true, 0);
+                }
             }
         });
     }
@@ -76,11 +83,18 @@ public class ExpenseRepository {
         });
     }
 
-    public void deleteSubcategory(long subcategoryId, Runnable onComplete) {
+    public void deleteSubcategory(long subcategoryId, OnDeleteCheckListener listener) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            subcategoryDao.deleteById(subcategoryId);
-            if (onComplete != null) {
-                onComplete.run();
+            int count = expenseDao.countExpensesBySubcategoryId(subcategoryId);
+            if (count > 0) {
+                if (listener != null) {
+                    listener.onResult(false, count);
+                }
+            } else {
+                subcategoryDao.deleteById(subcategoryId);
+                if (listener != null) {
+                    listener.onResult(true, 0);
+                }
             }
         });
     }
@@ -233,5 +247,9 @@ public class ExpenseRepository {
 
     public interface OnCategoryInsertedListener {
         void onInserted(long categoryId);
+    }
+
+    public interface OnDeleteCheckListener {
+        void onResult(boolean deleted, int activeExpenseCount);
     }
 }

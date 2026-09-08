@@ -52,8 +52,12 @@
     <string name="category_name_hint">e.g. Health &amp; Fitness</string>
     <string name="subcategory_name_label">Subcategory Name</string>
     <string name="subcategory_name_hint">e.g. Pharmacy</string>
-    <string name="delete_category_confirm">Are you sure you want to delete category \"%1$s\" and all its subcategories? Existing expenses linked to this category will also be deleted.</string>
+    <string name="delete_category_confirm">Are you sure you want to delete category \"%1$s\"?</string>
     <string name="delete_subcategory_confirm">Are you sure you want to delete subcategory \"%1$s\"?</string>
+    <string name="cannot_delete_category_title">Cannot Delete Category</string>
+    <string name="cannot_delete_category_message">Category \"%1$s\" cannot be deleted because there are %2$d expense(s) recorded under it.\n\nPlease delete or reassign those expenses before deleting this category.</string>
+    <string name="cannot_delete_subcategory_title">Cannot Delete Subcategory</string>
+    <string name="cannot_delete_subcategory_message">Subcategory \"%1$s\" cannot be deleted because there are %2$d expense(s) recorded under it.\n\nPlease delete or reassign those expenses before deleting this subcategory.</string>
     <string name="preferences_title">Preferences</string>
     <string name="currency_symbol_label">Currency Symbol</string>
     <string name="theme_mode_label">App Theme</string>
