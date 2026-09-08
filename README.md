@@ -61,19 +61,26 @@ A modern, clean, native Android application written in Java to manage personal e
 ### In Android Studio:
 1. Open Android Studio.
 2. Select **File -> Open...**
-3. Navigate to:
-   ```
-   C:\Users\KRISHNASANKAR\.gemini\antigravity\scratch\MonthlyExpenseTracker
-   ```
+3. Select and open the cloned `MonthlyExpenseTracker` repository directory.
 4. Wait for Gradle Sync to complete.
 5. Select an Android Emulator or connected physical device (API 26+) and click **Run (Shift + F10)**.
 
 ### From Command Line:
 ```powershell
-cd C:\Users\KRISHNASANKAR\.gemini\antigravity\scratch\MonthlyExpenseTracker
+cd MonthlyExpenseTracker
 .\gradlew.bat assembleDebug
 ```
-To run tests:
+Or on macOS/Linux:
+```bash
+cd MonthlyExpenseTracker
+./gradlew assembleDebug
+```
+
+To run unit tests:
 ```powershell
 .\gradlew.bat test
+```
+Or on macOS/Linux:
+```bash
+./gradlew test
 ```

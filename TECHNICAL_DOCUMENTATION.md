@@ -249,4 +249,4 @@ Generates verified binary at `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## 8. License & Contribution
 Distributed under the Apache 2.0 License.
-Author: Krishna Sankar (https://github.com/krishnasankar)
+Contributions and pull requests are welcome.
