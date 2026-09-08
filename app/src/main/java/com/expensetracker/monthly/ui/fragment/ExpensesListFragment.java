@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -167,7 +167,7 @@ public class ExpensesListFragment extends Fragment {
     }
 
     private void confirmDeleteExpense(ExpenseWithDetails item) {
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.delete_expense)
                 .setMessage(R.string.delete_expense_confirm)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {

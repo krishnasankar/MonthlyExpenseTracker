@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -175,7 +175,7 @@ public class SettingsFragment extends Fragment {
 
     private void confirmDeleteCategory(Category category) {
         String message = getString(R.string.delete_category_confirm, category.getName());
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete Category")
                 .setMessage(message)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
@@ -185,7 +185,7 @@ public class SettingsFragment extends Fragment {
                                 if (deleted) {
                                     Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    new AlertDialog.Builder(requireContext())
+                                    new MaterialAlertDialogBuilder(requireContext())
                                             .setTitle(R.string.cannot_delete_category_title)
                                             .setMessage(getString(R.string.cannot_delete_category_message, category.getName(), activeExpenseCount))
                                             .setPositiveButton(android.R.string.ok, null)
@@ -201,7 +201,7 @@ public class SettingsFragment extends Fragment {
 
     private void confirmDeleteSubcategory(Subcategory subcategory) {
         String message = getString(R.string.delete_subcategory_confirm, subcategory.getName());
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete Subcategory")
                 .setMessage(message)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
@@ -211,7 +211,7 @@ public class SettingsFragment extends Fragment {
                                 if (deleted) {
                                     Toast.makeText(requireContext(), "Subcategory deleted", Toast.LENGTH_SHORT).show();
                                 } else {
-                                    new AlertDialog.Builder(requireContext())
+                                    new MaterialAlertDialogBuilder(requireContext())
                                             .setTitle(R.string.cannot_delete_subcategory_title)
                                             .setMessage(getString(R.string.cannot_delete_subcategory_message, subcategory.getName(), activeExpenseCount))
                                             .setPositiveButton(android.R.string.ok, null)

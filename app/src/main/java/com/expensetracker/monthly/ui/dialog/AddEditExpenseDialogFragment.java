@@ -138,6 +138,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
         super.onStart();
         Dialog dialog = getDialog();
         if (dialog != null && dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialog.getWindow().setLayout(
                     (int) (getResources().getDisplayMetrics().widthPixels * 0.92),
                     ViewGroup.LayoutParams.WRAP_CONTENT
@@ -178,10 +179,11 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
 
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(
                         requireContext(),
-                        android.R.layout.simple_dropdown_item_1line,
+                        R.layout.item_dropdown_menu,
                         names
                 );
                 binding.actCategory.setAdapter(adapter);
+                binding.actCategory.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
 
                 // If editing, find initial category
                 if (selectedCategory == null && initialCategoryId > 0) {
@@ -225,10 +227,11 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
 
             ArrayAdapter<String> subAdapter = new ArrayAdapter<>(
                     requireContext(),
-                    android.R.layout.simple_dropdown_item_1line,
+                    R.layout.item_dropdown_menu,
                     subNames
             );
             binding.actSubcategory.setAdapter(subAdapter);
+            binding.actSubcategory.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
 
             if (initialSubcategoryId != null && initialSubcategoryId > 0 && selectedSubcategory == null) {
                 for (Subcategory s : subcategoriesList) {

@@ -17,6 +17,16 @@
 
         <item name="android:statusBarColor">@color/surface</item>
         <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Pop-up Menu & Dropdown Styling -->
+        <item name="popupMenuStyle">@style/Widget.MonthlyExpenseTracker.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.MonthlyExpenseTracker.PopupMenu.Overflow</item>
+        <item name="android:popupElevation">6dp</item>
+
+        <!-- Dialogs Styling -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MonthlyExpenseTracker.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.MonthlyExpenseTracker.MaterialAlertDialog</item>
+        <item name="android:datePickerDialogTheme">@style/ThemeOverlay.MonthlyExpenseTracker.DatePickerDialog</item>
     </style>
 
     <style name="CardElevationStyle" parent="Widget.Material3.CardView.Elevated">
@@ -30,5 +40,59 @@
     <style name="DialogAnimation">
         <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
+
+    <!-- Popup Menu Style -->
+    <style name="Widget.MonthlyExpenseTracker.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/bg_popup_menu</item>
+        <item name="android:popupElevation">6dp</item>
+    </style>
+
+    <style name="Widget.MonthlyExpenseTracker.PopupMenu.Overflow" parent="Widget.Material3.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/bg_popup_menu</item>
+        <item name="android:popupElevation">6dp</item>
+    </style>
+
+    <!-- Shape appearance for Dialogs: 16dp rounded corners -->
+    <style name="ShapeAppearance.MonthlyExpenseTracker.Dialog" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <!-- Material Alert Dialog Theme -->
+    <style name="ThemeOverlay.MonthlyExpenseTracker.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="shapeAppearance">@style/ShapeAppearance.MonthlyExpenseTracker.Dialog</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MonthlyExpenseTracker.DialogTitle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/MonthlyExpenseTracker.DialogBody</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.MonthlyExpenseTracker.DialogButton.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.MonthlyExpenseTracker.DialogButton.Negative</item>
+    </style>
+
+    <style name="MonthlyExpenseTracker.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MonthlyExpenseTracker.DialogBody" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Widget.MonthlyExpenseTracker.DialogButton.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.MonthlyExpenseTracker.DialogButton.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- Date Picker Dialog Theme -->
+    <style name="ThemeOverlay.MonthlyExpenseTracker.DatePickerDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.MonthlyExpenseTracker.Dialog</item>
     </style>
 </resources>
