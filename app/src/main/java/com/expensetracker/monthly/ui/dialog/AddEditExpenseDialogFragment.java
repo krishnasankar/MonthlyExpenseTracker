@@ -1,0 +1,321 @@
+package com.expensetracker.monthly.ui.dialog;
+
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.expensetracker.monthly.R;
+import com.expensetracker.monthly.data.entity.Category;
+import com.expensetracker.monthly.data.entity.Expense;
+import com.expensetracker.monthly.data.entity.Subcategory;
+import com.expensetracker.monthly.data.model.ExpenseWithDetails;
+import com.expensetracker.monthly.databinding.DialogAddExpenseBinding;
+import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
+import com.expensetracker.monthly.ui.viewmodel.ExpenseViewModel;
+import com.expensetracker.monthly.util.CurrencyUtils;
+import com.expensetracker.monthly.util.DateUtils;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+public class AddEditExpenseDialogFragment extends DialogFragment {
+
+    public static final String TAG = "AddEditExpenseDialog";
+    private static final String ARG_EXPENSE_ID = "arg_expense_id";
+    private static final String ARG_TITLE = "arg_title";
+    private static final String ARG_AMOUNT = "arg_amount";
+    private static final String ARG_DATE = "arg_date";
+    private static final String ARG_CATEGORY_ID = "arg_cat_id";
+    private static final String ARG_SUBCATEGORY_ID = "arg_subcat_id";
+    private static final String ARG_NOTES = "arg_notes";
+
+    private DialogAddExpenseBinding binding;
+    private ExpenseViewModel expenseViewModel;
+    private CategoryViewModel categoryViewModel;
+
+    private final Calendar selectedDate = Calendar.getInstance();
+    private final List<Category> categoriesList = new ArrayList<>();
+    private final List<Subcategory> subcategoriesList = new ArrayList<>();
+
+    private Category selectedCategory = null;
+    private Subcategory selectedSubcategory = null;
+
+    private boolean isEditMode = false;
+    private long editExpenseId = -1;
+    private long initialCategoryId = -1;
+    private Long initialSubcategoryId = null;
+
+    public static AddEditExpenseDialogFragment newInstance(@Nullable ExpenseWithDetails expense) {
+        AddEditExpenseDialogFragment fragment = new AddEditExpenseDialogFragment();
+        if (expense != null && expense.expense != null) {
+            Bundle args = new Bundle();
+            args.putLong(ARG_EXPENSE_ID, expense.expense.getId());
+            args.putString(ARG_TITLE, expense.expense.getTitle());
+            args.putDouble(ARG_AMOUNT, expense.expense.getAmount());
+            args.putLong(ARG_DATE, expense.expense.getDateMillis());
+            args.putLong(ARG_CATEGORY_ID, expense.expense.getCategoryId());
+            if (expense.expense.getSubcategoryId() != null) {
+                args.putLong(ARG_SUBCATEGORY_ID, expense.expense.getSubcategoryId());
+            }
+            args.putString(ARG_NOTES, expense.expense.getNotes());
+            fragment.setArguments(args);
+        }
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog);
+
+        if (getArguments() != null && getArguments().containsKey(ARG_EXPENSE_ID)) {
+            isEditMode = true;
+            editExpenseId = getArguments().getLong(ARG_EXPENSE_ID);
+            initialCategoryId = getArguments().getLong(ARG_CATEGORY_ID);
+            if (getArguments().containsKey(ARG_SUBCATEGORY_ID)) {
+                initialSubcategoryId = getArguments().getLong(ARG_SUBCATEGORY_ID);
+            }
+        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = DialogAddExpenseBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        expenseViewModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
+        categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
+
+        String currencySymbol = CurrencyUtils.getCurrencySymbol(requireContext());
+        binding.tilAmount.setPrefixText(currencySymbol + " ");
+
+        if (isEditMode) {
+            binding.tvDialogTitle.setText(R.string.edit_expense);
+            binding.etTitle.setText(getArguments().getString(ARG_TITLE, ""));
+            double amount = getArguments().getDouble(ARG_AMOUNT, 0.0);
+            binding.etAmount.setText(String.valueOf(amount));
+            long dateMillis = getArguments().getLong(ARG_DATE, System.currentTimeMillis());
+            selectedDate.setTimeInMillis(dateMillis);
+            binding.etNotes.setText(getArguments().getString(ARG_NOTES, ""));
+        } else {
+            binding.tvDialogTitle.setText(R.string.add_expense);
+            selectedDate.setTimeInMillis(System.currentTimeMillis());
+        }
+
+        updateDateField();
+
+        binding.etDate.setOnClickListener(v -> showDatePicker());
+
+        binding.btnCancel.setOnClickListener(v -> dismiss());
+        binding.btnSave.setOnClickListener(v -> saveExpense());
+
+        observeCategories();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if (dialog != null && dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(
+                    (int) (getResources().getDisplayMetrics().widthPixels * 0.92),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+    }
+
+    private void updateDateField() {
+        binding.etDate.setText(DateUtils.formatDate(selectedDate.getTimeInMillis()));
+    }
+
+    private void showDatePicker() {
+        DatePickerDialog dialog = new DatePickerDialog(
+                requireContext(),
+                (view, year, month, dayOfMonth) -> {
+                    selectedDate.set(Calendar.YEAR, year);
+                    selectedDate.set(Calendar.MONTH, month);
+                    selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    updateDateField();
+                },
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH)
+        );
+        dialog.show();
+    }
+
+    private void observeCategories() {
+        categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
+            categoriesList.clear();
+            if (categories != null && !categories.isEmpty()) {
+                categoriesList.addAll(categories);
+
+                List<String> names = new ArrayList<>();
+                for (Category cat : categories) {
+                    names.add(cat.getName());
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                        requireContext(),
+                        android.R.layout.simple_dropdown_item_1line,
+                        names
+                );
+                binding.actCategory.setAdapter(adapter);
+
+                // If editing, find initial category
+                if (selectedCategory == null && initialCategoryId > 0) {
+                    for (Category cat : categories) {
+                        if (cat.getId() == initialCategoryId) {
+                            selectedCategory = cat;
+                            binding.actCategory.setText(cat.getName(), false);
+                            loadSubcategories(cat.getId());
+                            break;
+                        }
+                    }
+                } else if (selectedCategory == null && !categories.isEmpty()) {
+                    // Default select first category
+                    selectedCategory = categories.get(0);
+                    binding.actCategory.setText(selectedCategory.getName(), false);
+                    loadSubcategories(selectedCategory.getId());
+                }
+
+                binding.actCategory.setOnItemClickListener((parent, view, position, id) -> {
+                    selectedCategory = categoriesList.get(position);
+                    selectedSubcategory = null;
+                    binding.actSubcategory.setText("", false);
+                    loadSubcategories(selectedCategory.getId());
+                });
+            }
+        });
+    }
+
+    private void loadSubcategories(long categoryId) {
+        categoryViewModel.getSubcategoriesForCategory(categoryId).observe(getViewLifecycleOwner(), subcategories -> {
+            subcategoriesList.clear();
+            List<String> subNames = new ArrayList<>();
+            subNames.add(getString(R.string.expense_subcategory_none));
+
+            if (subcategories != null && !subcategories.isEmpty()) {
+                subcategoriesList.addAll(subcategories);
+                for (Subcategory s : subcategories) {
+                    subNames.add(s.getName());
+                }
+            }
+
+            ArrayAdapter<String> subAdapter = new ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_dropdown_item_1line,
+                    subNames
+            );
+            binding.actSubcategory.setAdapter(subAdapter);
+
+            if (initialSubcategoryId != null && initialSubcategoryId > 0 && selectedSubcategory == null) {
+                for (Subcategory s : subcategoriesList) {
+                    if (s.getId() == initialSubcategoryId) {
+                        selectedSubcategory = s;
+                        binding.actSubcategory.setText(s.getName(), false);
+                        break;
+                    }
+                }
+                initialSubcategoryId = null; // Clear so subsequent category switches don't re-select it
+            } else if (selectedSubcategory != null) {
+                binding.actSubcategory.setText(selectedSubcategory.getName(), false);
+            } else {
+                binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
+            }
+
+            binding.actSubcategory.setOnItemClickListener((parent, view, position, id) -> {
+                if (position == 0) {
+                    selectedSubcategory = null;
+                } else {
+                    selectedSubcategory = subcategoriesList.get(position - 1);
+                }
+            });
+        });
+    }
+
+    private void saveExpense() {
+        String title = binding.etTitle.getText() != null ? binding.etTitle.getText().toString().trim() : "";
+        String amountStr = binding.etAmount.getText() != null ? binding.etAmount.getText().toString().trim() : "";
+        String notes = binding.etNotes.getText() != null ? binding.etNotes.getText().toString().trim() : "";
+
+        if (title.isEmpty()) {
+            binding.tilTitle.setError(getString(R.string.error_required_fields));
+            return;
+        } else {
+            binding.tilTitle.setError(null);
+        }
+
+        double amount;
+        try {
+            amount = Double.parseDouble(amountStr);
+            if (amount <= 0) {
+                binding.tilAmount.setError(getString(R.string.error_invalid_amount));
+                return;
+            }
+            binding.tilAmount.setError(null);
+        } catch (NumberFormatException e) {
+            binding.tilAmount.setError(getString(R.string.error_invalid_amount));
+            return;
+        }
+
+        if (selectedCategory == null) {
+            binding.tilCategory.setError(getString(R.string.error_required_fields));
+            return;
+        } else {
+            binding.tilCategory.setError(null);
+        }
+
+        Long subcategoryId = selectedSubcategory != null ? selectedSubcategory.getId() : null;
+
+        if (isEditMode) {
+            Expense updated = new Expense(title, amount, selectedDate.getTimeInMillis(), selectedCategory.getId(), subcategoryId, notes);
+            updated.setId(editExpenseId);
+            expenseViewModel.updateExpense(updated, () -> {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Expense updated", Toast.LENGTH_SHORT).show();
+                        dismiss();
+                    });
+                }
+            });
+        } else {
+            Expense newExpense = new Expense(title, amount, selectedDate.getTimeInMillis(), selectedCategory.getId(), subcategoryId, notes);
+            expenseViewModel.insertExpense(newExpense, () -> {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Expense added", Toast.LENGTH_SHORT).show();
+                        dismiss();
+                    });
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+}
