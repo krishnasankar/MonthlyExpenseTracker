@@ -1,0 +1,76 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Base Rounded Squircle Container -->
+    <path
+        android:fillColor="#1E88E5"
+        android:pathData="M30,8 L66,8 C78.15,8 88,17.85 88,30 L88,66 C88,78.15 78.15,88 66,88 L30,88 C17.85,88 8,78.15 8,66 L8,30 C8,17.85 17.85,8 30,8 Z" />
+
+    <!-- Subtle Bottom Depth Arc -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M12,66 C12,77.5 20.5,86 32,86 L64,86 C75.5,86 84,77.5 84,66 C84,78.15 78.15,88 66,88 L30,88 C17.85,88 8,78.15 8,66 C8,66 12,66 12,66 Z" />
+
+    <!-- Calendar Month Header Band (Translucent Glass) -->
+    <path
+        android:fillColor="#26FFFFFF"
+        android:pathData="M24,20 L72,20 C75.31,20 78,22.69 78,26 L78,28 C78,29.1 77.1,30 76,30 L20,30 C18.9,30 18,29.1 18,28 L18,26 C18,22.69 20.69,20 24,20 Z" />
+
+    <!-- Calendar Binder Clips -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M33,14 C33,12.9 33.9,12 35,12 L37,12 C38.1,12 39,12.9 39,14 L39,23 C39,24.1 38.1,25 37,25 L35,25 C33.9,25 33,24.1 33,23 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M57,14 C57,12.9 57.9,12 59,12 L61,12 C62.1,12 63,12.9 63,14 L63,23 C63,24.1 62.1,25 61,25 L59,25 C57.9,25 57,24.1 57,23 Z" />
+
+    <!-- Calendar Monthly Schedule Dots -->
+    <path
+        android:fillColor="#4DFFFFFF"
+        android:pathData="M27,34.5 A2.5,2.5 0 1,0 27,39.5 A2.5,2.5 0 1,0 27,34.5 Z" />
+    <path
+        android:fillColor="#4DFFFFFF"
+        android:pathData="M48,34.5 A2.5,2.5 0 1,0 48,39.5 A2.5,2.5 0 1,0 48,34.5 Z" />
+
+    <!-- Secondary Accent Trendline (Teal Glow / Rhythm) -->
+    <path
+        android:strokeColor="#26A69A"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M22,74 L36,50 L48,62 L60,49" />
+
+    <!-- Primary 'M' Monogram Financial Upward Trendline -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M22,68 L36,44 L48,56 L68,34" />
+
+    <!-- Trend Arrowhead -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M56,34 L68,34 L68,46" />
+
+    <!-- Minimalist Coin / Expense Token Badge -->
+    <path
+        android:fillColor="#FF7043"
+        android:pathData="M67,51 A12,12 0 1,0 67,75 A12,12 0 1,0 67,51 Z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M67,54 A9,9 0 1,0 67,72 A9,9 0 1,0 67,54 Z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M62.5,63 L71.5,63" />
+
+</vector>

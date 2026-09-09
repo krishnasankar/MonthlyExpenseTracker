@@ -68,4 +68,11 @@
     <string name="sample_data_added">Sample data added successfully!</string>
     <string name="error_required_fields">Please fill in all required fields.</string>
     <string name="error_invalid_amount">Please enter a valid amount.</string>
+
+    <!-- About & Branding -->
+    <string name="about_title">About App</string>
+    <string name="app_tagline">Smart, intuitive &amp; clutter-free monthly finances</string>
+    <string name="app_version">Version 1.0.0</string>
+    <string name="app_badge_offline">100% Offline</string>
+    <string name="app_badge_private">Privacy Focused</string>
 </resources>

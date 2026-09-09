@@ -40,6 +40,11 @@ A modern, clean, native Android application written in Java to manage personal e
    - **Default Currency (INR)**: Pre-configured with Indian Rupee (`₹`) as the default currency on launch, with multi-currency options (`$`, `€`, `£`, `₹`, `¥`).
    - **Demo Data Generator**: One-tap "Add Sample Data for Demo" button under Settings to instantly populate sample monthly expenses for demonstration.
 
+5. **Minimalist Branding & Modern Identity**:
+   - **Custom Vector Logo**: High-fidelity, scalable Android Vector Drawable combining monthly calendar geometry, an upward 'M' financial trendline, and an expense coin token.
+   - **Adaptive Launcher Icons**: Dual-layer adaptive launcher icon with vibrant brand gradient background and centered safe-zone foreground (`ic_launcher` & `ic_launcher_round`).
+   - **In-App Integration**: Prominently displayed in the top `MaterialToolbar` across all screens and within an "About App" branding card in Settings.
+
 ---
 
 ## 🏗️ Architecture & Tech Stack
