@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Preferences Card (Currency & Demo Data) -->
+        <!-- Preferences Card (Currency & Theme) -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -146,14 +146,6 @@
                         android:layout_weight="1"
                         android:text="@string/theme_dark" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_seed_demo_data"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/seed_sample_data"
-                    app:icon="@drawable/ic_trending_up" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

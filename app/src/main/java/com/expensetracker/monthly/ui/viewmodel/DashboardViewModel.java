@@ -105,10 +105,4 @@ public class DashboardViewModel extends AndroidViewModel {
     public LiveData<List<ExpenseWithDetails>> getRecentExpenses() {
         return recentExpenses;
     }
-
-    public void seedDemoData(Runnable onComplete) {
-        Calendar cal = selectedMonth.getValue();
-        if (cal == null) cal = Calendar.getInstance();
-        repository.seedDemoExpensesForMonth(cal, onComplete);
-    }
 }

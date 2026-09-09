@@ -21,14 +21,12 @@ import com.expensetracker.monthly.ui.adapter.CategoryExpandableAdapter;
 import com.expensetracker.monthly.ui.dialog.AddCategoryDialogFragment;
 import com.expensetracker.monthly.ui.dialog.AddSubcategoryDialogFragment;
 import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
-import com.expensetracker.monthly.ui.viewmodel.DashboardViewModel;
 import com.expensetracker.monthly.util.CurrencyUtils;
 
 public class SettingsFragment extends Fragment {
 
     private FragmentSettingsBinding binding;
     private CategoryViewModel categoryViewModel;
-    private DashboardViewModel dashboardViewModel;
     private CategoryExpandableAdapter categoryAdapter;
 
     @Nullable
@@ -43,12 +41,10 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
-        dashboardViewModel = new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
 
         setupCurrencyPicker();
         setupThemePicker();
         setupCategoryManagement();
-        setupDemoDataButton();
         setupObservers();
     }
 
@@ -143,20 +139,6 @@ public class SettingsFragment extends Fragment {
 
         binding.rvManageCategories.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvManageCategories.setAdapter(categoryAdapter);
-    }
-
-    private void setupDemoDataButton() {
-        binding.btnSeedDemoData.setOnClickListener(v -> {
-            binding.btnSeedDemoData.setEnabled(false);
-            dashboardViewModel.seedDemoData(() -> {
-                if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> {
-                        binding.btnSeedDemoData.setEnabled(true);
-                        Toast.makeText(requireContext(), R.string.sample_data_added, Toast.LENGTH_SHORT).show();
-                    });
-                }
-            });
-        });
     }
 
     private void setupObservers() {

@@ -64,8 +64,6 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-    <string name="seed_sample_data">Add Sample Data for Demo</string>
-    <string name="sample_data_added">Sample data added successfully!</string>
     <string name="error_required_fields">Please fill in all required fields.</string>
     <string name="error_invalid_amount">Please enter a valid amount.</string>
 

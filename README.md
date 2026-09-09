@@ -35,10 +35,9 @@ A modern, clean, native Android application written in Java to manage personal e
    - **Category Breakdown**: Progress bars showing the exact percentage and dollar amount spent per category.
    - **Recent Transactions**: Quick preview of the most recent expenses in the selected month with direct link to the full list.
 
-4. **Preferences, Dark Mode & Demo Data**:
+4. **Preferences & Dark Mode**:
    - **Dark Mode Support**: Full support for System Default, Light Mode, and Dark Mode themes with OLED-optimized contrast.
    - **Default Currency (INR)**: Pre-configured with Indian Rupee (`₹`) as the default currency on launch, with multi-currency options (`$`, `€`, `£`, `₹`, `¥`).
-   - **Demo Data Generator**: One-tap "Add Sample Data for Demo" button under Settings to instantly populate sample monthly expenses for demonstration.
 
 5. **Minimalist Branding & Modern Identity**:
    - **Custom Vector Logo**: High-fidelity, scalable Android Vector Drawable combining monthly calendar geometry, an upward 'M' financial trendline, and an expense coin token.
