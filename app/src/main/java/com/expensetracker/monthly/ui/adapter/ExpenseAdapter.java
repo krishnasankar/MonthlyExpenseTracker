@@ -2,15 +2,22 @@ package com.expensetracker.monthly.ui.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.expensetracker.monthly.R;
 import com.expensetracker.monthly.data.model.ExpenseWithDetails;
 import com.expensetracker.monthly.databinding.ItemExpenseBinding;
 import com.expensetracker.monthly.util.CurrencyUtils;
@@ -68,6 +75,43 @@ public class ExpenseAdapter extends ListAdapter<ExpenseWithDetails, ExpenseAdapt
         holder.bind(getItem(position));
     }
 
+    public static CharSequence formatCategoryText(Context context, String categoryName, String subcategoryName) {
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            categoryName = "Uncategorized";
+        } else {
+            categoryName = categoryName.trim();
+        }
+
+        if (subcategoryName == null || subcategoryName.trim().isEmpty()) {
+            return categoryName;
+        }
+
+        String subName = subcategoryName.trim();
+        String separator = " › ";
+        String fullText = categoryName + separator + subName;
+
+        if (context == null) {
+            return fullText;
+        }
+
+        SpannableStringBuilder ssb = new SpannableStringBuilder(fullText);
+
+        int categoryColor = ContextCompat.getColor(context, R.color.text_secondary);
+        int separatorColor = ContextCompat.getColor(context, R.color.text_tertiary);
+        int subcategoryColor = ContextCompat.getColor(context, R.color.secondary);
+
+        int catEnd = categoryName.length();
+        int sepEnd = catEnd + separator.length();
+        int subEnd = fullText.length();
+
+        ssb.setSpan(new ForegroundColorSpan(categoryColor), 0, catEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.setSpan(new ForegroundColorSpan(separatorColor), catEnd, sepEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.setSpan(new ForegroundColorSpan(subcategoryColor), sepEnd, subEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.setSpan(new StyleSpan(Typeface.BOLD), sepEnd, subEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        return ssb;
+    }
+
     class ExpenseViewHolder extends RecyclerView.ViewHolder {
         private final ItemExpenseBinding binding;
 
@@ -84,7 +128,6 @@ public class ExpenseAdapter extends ListAdapter<ExpenseWithDetails, ExpenseAdapt
             binding.tvExpenseDate.setText(DateUtils.formatDate(item.expense.getDateMillis()) + " • " + DateUtils.formatTime(item.expense.getDateMillis()));
 
             if (item.category != null) {
-                binding.tvExpenseCategory.setText(item.category.getName());
                 try {
                     int color = Color.parseColor(item.category.getColorHex());
                     binding.viewCategoryIndicator.setBackgroundColor(color);
@@ -92,18 +135,17 @@ public class ExpenseAdapter extends ListAdapter<ExpenseWithDetails, ExpenseAdapt
                     binding.viewCategoryIndicator.setBackgroundColor(Color.parseColor("#1E88E5"));
                 }
             } else {
-                binding.tvExpenseCategory.setText("Uncategorized");
                 binding.viewCategoryIndicator.setBackgroundColor(Color.GRAY);
             }
 
-            if (item.subcategory != null && item.subcategory.getName() != null && !item.subcategory.getName().isEmpty()) {
-                binding.tvSubcategorySeparator.setVisibility(View.VISIBLE);
-                binding.tvExpenseSubcategory.setVisibility(View.VISIBLE);
-                binding.tvExpenseSubcategory.setText(item.subcategory.getName());
-            } else {
-                binding.tvSubcategorySeparator.setVisibility(View.GONE);
-                binding.tvExpenseSubcategory.setVisibility(View.GONE);
-            }
+            String categoryName = item.category != null ? item.category.getName() : null;
+            String subcategoryName = item.subcategory != null ? item.subcategory.getName() : null;
+
+            binding.tvExpenseCategory.setText(formatCategoryText(
+                    binding.getRoot().getContext(),
+                    categoryName,
+                    subcategoryName
+            ));
 
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {

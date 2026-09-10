@@ -41,6 +41,10 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/expense_title_label"
                 android:inputType="textCapSentences"
+                android:imeOptions="actionNext"
+                android:singleLine="true"
+                android:nextFocusForward="@+id/et_amount"
+                android:nextFocusDown="@+id/et_amount"
                 android:completionThreshold="1"
                 android:popupBackground="@drawable/bg_popup_menu"
                 android:dropDownVerticalOffset="4dp"
@@ -60,12 +64,14 @@
             app:boxCornerRadiusTopStart="10dp"
             app:prefixText="₹ ">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.expensetracker.monthly.ui.view.PreImeTextInputEditText
                 android:id="@+id/et_amount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/expense_amount_label"
                 android:inputType="numberDecimal"
+                android:imeOptions="actionNext"
+                android:singleLine="true"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -148,13 +154,14 @@
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusTopStart="10dp">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.expensetracker.monthly.ui.view.PreImeTextInputEditText
                 android:id="@+id/et_notes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="top"
                 android:hint="@string/expense_notes_label"
-                android:inputType="textMultiLine"
+                android:inputType="textCapSentences"
+                android:imeOptions="actionDone"
                 android:lines="2"
                 android:maxLines="4" />
         </com.google.android.material.textfield.TextInputLayout>

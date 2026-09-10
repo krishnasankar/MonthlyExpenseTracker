@@ -6,15 +6,23 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -129,13 +137,16 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
 
         updateDateField();
 
-        binding.etDate.setOnClickListener(v -> showDatePicker());
+        binding.etDate.setOnClickListener(v -> showDatePicker(false));
+        binding.tilDate.setOnClickListener(v -> showDatePicker(false));
 
-        binding.btnCancel.setOnClickListener(v -> dismiss());
+        binding.btnCancel.setOnClickListener(v -> handleBackPress());
         binding.btnSave.setOnClickListener(v -> saveExpense());
 
         observeCategories();
         setupTitleAutofill();
+        setupInputActions();
+        setupBackPressHandling();
     }
 
     @Override
@@ -148,14 +159,240 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     (int) (getResources().getDisplayMetrics().widthPixels * 0.92),
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!isEditMode) {
+            focusTitleFieldAndShowKeyboard();
+        }
+    }
+
+    private void setupBackPressHandling() {
+        binding.etTitle.setOnBackPressedListener(() -> {
+            handleBackPress();
+            return true;
+        });
+
+        binding.etAmount.setOnBackPressedListener(() -> {
+            handleBackPress();
+            return true;
+        });
+
+        binding.etNotes.setOnBackPressedListener(() -> {
+            handleBackPress();
+            return true;
+        });
+
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            dialog.setOnKeyListener((dialogInterface, keyCode, event) -> {
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+                    handleBackPress();
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                handleBackPress();
+            }
+        });
+    }
+
+    private void handleBackPress() {
+        hideKeyboard();
+        dismiss();
+    }
+
+    private void hideKeyboard() {
+        if (binding == null) return;
+        View focus = null;
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            focus = dialog.getCurrentFocus();
+        }
+        if (focus == null && getView() != null) {
+            focus = getView().findFocus();
+        }
+        if (focus == null && binding != null) {
+            focus = binding.getRoot();
+        }
+
+        if (focus != null && isAdded()) {
+            if (dialog != null && dialog.getWindow() != null) {
+                WindowInsetsControllerCompat insetsController =
+                        WindowCompat.getInsetsController(dialog.getWindow(), focus);
+                if (insetsController != null) {
+                    insetsController.hide(WindowInsetsCompat.Type.ime());
+                }
+            }
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+            }
+        }
+    }
+
+    private void setupInputActions() {
+        // Title input actions
+        binding.etTitle.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+        binding.etTitle.setOnEditorActionListener((v, actionId, event) -> {
+            boolean isEnterKey = event != null
+                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == KeyEvent.ACTION_DOWN;
+            boolean isProceedAction = actionId == EditorInfo.IME_ACTION_NEXT
+                    || actionId == EditorInfo.IME_ACTION_DONE
+                    || actionId == EditorInfo.IME_ACTION_GO;
+
+            if (isProceedAction || isEnterKey) {
+                moveToAmountField();
+                return true;
+            }
+            return false;
+        });
+
+        binding.etTitle.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                moveToAmountField();
+                return true;
+            }
+            return false;
+        });
+
+        // Amount input actions
+        binding.etAmount.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+        binding.etAmount.setOnEditorActionListener((v, actionId, event) -> {
+            boolean isEnterKey = event != null
+                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == KeyEvent.ACTION_DOWN;
+            boolean isProceedAction = actionId == EditorInfo.IME_ACTION_NEXT
+                    || actionId == EditorInfo.IME_ACTION_DONE
+                    || actionId == EditorInfo.IME_ACTION_GO;
+
+            if (isProceedAction || isEnterKey) {
+                proceedFromAmount();
+                return true;
+            }
+            return false;
+        });
+
+        binding.etAmount.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+                proceedFromAmount();
+                return true;
+            }
+            return false;
+        });
+
+        // Notes input actions
+        binding.etNotes.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        binding.etNotes.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard();
+                saveExpense();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void moveToAmountField() {
+        if (binding == null) return;
+        binding.etTitle.dismissDropDown();
+        binding.etAmount.requestFocus();
+        if (binding.etAmount.getText() != null) {
+            binding.etAmount.setSelection(binding.etAmount.getText().length());
+        }
+        showKeyboardForView(binding.etAmount);
+    }
+
+    private void proceedFromAmount() {
+        if (binding == null) return;
+        hideKeyboard();
+        binding.etAmount.clearFocus();
+        showDatePicker(true);
+    }
+
+    private void proceedToCategory() {
+        if (binding == null || !isAdded()) return;
+        binding.actCategory.requestFocus();
+        binding.actCategory.postDelayed(() -> {
+            if (binding != null && isAdded()) {
+                binding.actCategory.showDropDown();
+            }
+        }, 200);
+    }
+
+    private void proceedToSubcategory() {
+        if (binding == null || !isAdded()) return;
+        binding.actSubcategory.requestFocus();
+        binding.actSubcategory.postDelayed(() -> {
+            if (binding != null && isAdded()) {
+                binding.actSubcategory.showDropDown();
+            }
+        }, 200);
+    }
+
+    private void proceedToNotes() {
+        if (binding == null || !isAdded()) return;
+        binding.etNotes.requestFocus();
+        if (binding.etNotes.getText() != null) {
+            binding.etNotes.setSelection(binding.etNotes.getText().length());
+        }
+        binding.etNotes.postDelayed(() -> {
+            if (binding != null && isAdded()) {
+                showKeyboardForView(binding.etNotes);
+            }
+        }, 200);
+    }
+
+    private void focusTitleFieldAndShowKeyboard() {
+        if (binding == null) return;
+        binding.etTitle.requestFocus();
+        if (binding.etTitle.getText() != null) {
+            binding.etTitle.setSelection(binding.etTitle.getText().length());
+        }
+        binding.etTitle.postDelayed(() -> {
+            if (isAdded() && binding != null) {
+                showKeyboardForView(binding.etTitle);
+            }
+        }, 100);
+    }
+
+    private void showKeyboardForView(View view) {
+        if (view == null || !isAdded()) return;
+        view.requestFocus();
+        view.post(() -> {
+            if (!isAdded() || view == null) return;
+            view.requestFocus();
+            Dialog dialog = getDialog();
+            if (dialog != null && dialog.getWindow() != null) {
+                WindowInsetsControllerCompat insetsController =
+                        WindowCompat.getInsetsController(dialog.getWindow(), view);
+                if (insetsController != null) {
+                    insetsController.show(WindowInsetsCompat.Type.ime());
+                }
+            }
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+                imm.showSoftInput(view, 0);
+            }
+        });
     }
 
     private void updateDateField() {
         binding.etDate.setText(DateUtils.formatDate(selectedDate.getTimeInMillis()));
     }
 
-    private void showDatePicker() {
+    private void showDatePicker(boolean continueFlow) {
         DatePickerDialog dialog = new DatePickerDialog(
                 requireContext(),
                 (view, year, month, dayOfMonth) -> {
@@ -163,6 +400,9 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     selectedDate.set(Calendar.MONTH, month);
                     selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
                     updateDateField();
+                    if (continueFlow) {
+                        proceedToCategory();
+                    }
                 },
                 selectedDate.get(Calendar.YEAR),
                 selectedDate.get(Calendar.MONTH),
@@ -196,7 +436,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                         if (cat.getId() == initialCategoryId) {
                             selectedCategory = cat;
                             binding.actCategory.setText(cat.getName(), false);
-                            loadSubcategories(cat.getId());
+                            loadSubcategories(cat.getId(), false);
                             break;
                         }
                     }
@@ -204,7 +444,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     // Default select first category
                     selectedCategory = categories.get(0);
                     binding.actCategory.setText(selectedCategory.getName(), false);
-                    loadSubcategories(selectedCategory.getId());
+                    loadSubcategories(selectedCategory.getId(), false);
                 }
 
                 binding.actCategory.setOnItemClickListener((parent, view, position, id) -> {
@@ -212,13 +452,13 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     selectedSubcategory = null;
                     pendingAutofillSubcategoryId = null;
                     binding.actSubcategory.setText("", false);
-                    loadSubcategories(selectedCategory.getId());
+                    loadSubcategories(selectedCategory.getId(), true);
                 });
             }
         });
     }
 
-    private void loadSubcategories(long categoryId) {
+    private void loadSubcategories(long categoryId, boolean continueFlow) {
         if (subcategoriesLiveData != null) {
             subcategoriesLiveData.removeObservers(getViewLifecycleOwner());
         }
@@ -228,7 +468,9 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
             List<String> subNames = new ArrayList<>();
             subNames.add(getString(R.string.expense_subcategory_none));
 
+            boolean hasSubcategories = false;
             if (subcategories != null && !subcategories.isEmpty()) {
+                hasSubcategories = true;
                 subcategoriesList.addAll(subcategories);
                 for (Subcategory s : subcategories) {
                     subNames.add(s.getName());
@@ -279,7 +521,16 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                 } else {
                     selectedSubcategory = subcategoriesList.get(position - 1);
                 }
+                proceedToNotes();
             });
+
+            if (continueFlow) {
+                if (hasSubcategories) {
+                    proceedToSubcategory();
+                } else {
+                    proceedToNotes();
+                }
+            }
         });
     }
 
@@ -322,7 +573,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
 
                 selectedSubcategory = null;
                 pendingAutofillSubcategoryId = suggestion.getSubcategoryId();
-                loadSubcategories(cat.getId());
+                loadSubcategories(cat.getId(), false);
                 break;
             }
         }
