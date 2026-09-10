@@ -1,5 +1,9 @@
 # Monthly Expense Tracker (Android)
 
+<p align="center">
+  <img src="assets/social-preview-1280x640.jpg" alt="Monthly Expense Tracker Social Banner" width="100%" />
+</p>
+
 A modern, clean, native Android application written in Java to manage personal expenses on a monthly basis. The application is built with 100% offline-first local persistence using Android Jetpack Room (SQLite), MVVM architecture, and Material Design 3.
 
 ---
