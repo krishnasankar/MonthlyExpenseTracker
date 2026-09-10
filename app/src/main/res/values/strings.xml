@@ -79,7 +79,7 @@
     <!-- About & Branding -->
     <string name="about_title">About App</string>
     <string name="app_tagline">Smart, intuitive &amp; clutter-free monthly finances</string>
-    <string name="app_version">Version 1.0.0</string>
+    <string name="app_version">Version 2.0.0</string>
     <string name="app_badge_offline">100% Offline</string>
     <string name="app_badge_private">Privacy Focused</string>
 

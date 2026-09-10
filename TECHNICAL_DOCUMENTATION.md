@@ -64,6 +64,7 @@ erDiagram
         TEXT name UK "unique = true, not null"
         TEXT color_hex "not null"
         TEXT icon_name
+        REAL budget_amount "not null, default = 0.0"
     }
 
     SUBCATEGORIES {
@@ -142,16 +143,23 @@ com.expensetracker.monthly
 │   ├── dialog
 │   │   ├── AddCategoryDialogFragment.java     # Dialog for creating and editing categories
 │   │   ├── AddEditExpenseDialogFragment.java  # Dialog for adding/editing expenses
-│   │   └── AddSubcategoryDialogFragment.java  # Dialog for creating and editing subcategories
+│   │   ├── AddSubcategoryDialogFragment.java  # Dialog for creating and editing subcategories
+│   │   ├── SetBudgetDialogFragment.java       # Dialog for configuring monthly spending budget
+│   │   └── SetCategoryBudgetDialogFragment.java # Dialog for configuring category-specific budgets
 │   ├── fragment
-│   │   ├── DashboardFragment.java    # KPI cards, charts, recent transactions
+│   │   ├── DashboardFragment.java    # KPI cards, charts, budgeting, recent transactions
 │   │   ├── ExpensesListFragment.java # Filterable, searchable expense list
 │   │   └── SettingsFragment.java     # Category management, currency, demo data
-│   └── viewmodel
-│       ├── CategoryViewModel.java    # Manages category data & mutations
-│       ├── DashboardViewModel.java   # Manages month calendar & aggregate metrics
-│       └── ExpenseViewModel.java     # Manages expense filters, search & CRUD
+│   ├── helper
+│   │   └── SwipeToDeleteCallback.java # ItemTouchHelper swipe gesture callback
+│   ├── viewmodel
+│   │   ├── CategoryViewModel.java    # Manages category data & mutations
+│   │   ├── DashboardViewModel.java   # Manages month calendar & aggregate metrics
+│   │   └── ExpenseViewModel.java     # Manages expense filters, search & CRUD
+│   └── widget
+│       └── MonthlyExpenseWidgetProvider.java # Home screen AppWidget provider
 └── util
+    ├── BudgetUtils.java              # Budget pacing, safe daily spend, and progress math
     ├── CurrencyUtils.java            # Currency symbol preferences (INR default) & formatting
     ├── DateUtils.java                # Month calculation, timestamp formatting
     └── ThemeUtils.java               # Dark Mode, Light Mode, and System Theme manager

@@ -24,22 +24,35 @@ A modern, clean, native Android application written in Java to manage personal e
      - **Education & Work**: Books & Courses, Software & Tools, Office Supplies
      - **Miscellaneous**: General, Gifts, Donations
    - **Settings Management**:
-     - Add custom categories with color palette selection.
-     - Add subcategories under any category.
+     - Add & edit custom categories with color palette selection.
+     - Add & edit subcategories under any category.
      - Delete subcategories (with individual chip delete buttons).
-     - Delete categories (with safety confirmation).
+     - Delete categories (with active expense safety protection).
 
-3. **Analytics Dashboard**:
+3. **Monthly & Category Budgeting (v2.0)**:
+   - **Spending Target & Pacing**: Set overall monthly budgets to track spending pace, remaining balance, and over-budget warnings.
+   - **Safe Daily Spend**: Dynamically computes recommended daily spending limit based on remaining budget and days left in the month.
+   - **Category Budgets**: Assign specific monthly budgets per category with live visual budget badges and comparative progress bars.
+
+4. **Home Screen App Widget (v2.0)**:
+   - Modern home screen widget displaying current monthly spend and budget status at a glance.
+   - Direct quick-add button to launch the expense entry flow instantly from the home screen.
+
+5. **Analytics Dashboard**:
    - **Metrics Cards**: Total Expenses, Daily Average, Transaction Count, and Highest Spend Category for the selected month.
    - **Interactive Donut Chart**: Custom Canvas-rendered donut chart with smooth arcs, hole cutout, category color segments, and interactive touch selection.
-   - **Category Breakdown**: Progress bars showing the exact percentage and dollar amount spent per category.
+   - **Category Breakdown**: Progress bars showing the exact percentage, spent amount, and budget allocations per category.
    - **Recent Transactions**: Quick preview of the most recent expenses in the selected month with direct link to the full list.
 
-4. **Preferences & Dark Mode**:
+6. **Smart Expense Entry & Productivity**:
+   - **Autofill Suggestions**: Title suggestions based on transaction history with automatic category and subcategory pre-selection.
+   - **Streamlined Workflow**: Auto-focused amount field, smooth IME progression, and swipe-to-delete support.
+
+7. **Preferences & Dark Mode**:
    - **Dark Mode Support**: Full support for System Default, Light Mode, and Dark Mode themes with OLED-optimized contrast.
    - **Default Currency (INR)**: Pre-configured with Indian Rupee (`₹`) as the default currency on launch, with multi-currency options (`$`, `€`, `£`, `₹`, `¥`).
 
-5. **Minimalist Branding & Modern Identity**:
+8. **Minimalist Branding & Modern Identity**:
    - **Custom Vector Logo**: High-fidelity, scalable Android Vector Drawable combining monthly calendar geometry, an upward 'M' financial trendline, and an expense coin token.
    - **Adaptive Launcher Icons**: Dual-layer adaptive launcher icon with vibrant brand gradient background and centered safe-zone foreground (`ic_launcher` & `ic_launcher_round`).
    - **In-App Integration**: Prominently displayed in the top `MaterialToolbar` across all screens and within an "About App" branding card in Settings.
