@@ -70,6 +70,14 @@ public class CategoryViewModel extends AndroidViewModel {
         repository.deleteSubcategory(subcategoryId, listener);
     }
 
+    public void createCategory(Category category, ExpenseRepository.OnEntityCreatedListener<Category> listener) {
+        repository.createCategory(category, listener);
+    }
+
+    public void createSubcategory(Subcategory subcategory, ExpenseRepository.OnEntityCreatedListener<Subcategory> listener) {
+        repository.createSubcategory(subcategory, listener);
+    }
+
     public void updateCategoryBudget(long categoryId, double budget, Runnable onComplete) {
         repository.updateCategoryBudget(categoryId, budget, onComplete);
     }

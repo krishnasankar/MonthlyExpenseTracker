@@ -50,13 +50,60 @@ public class SettingsFragment extends Fragment {
         setupThemePicker();
         setupBudgetSetting();
         setupCategoryManagement();
+        setupRecurringSetting();
+        setupSecuritySetting();
+        setupExportSetting();
         setupObservers();
+    }
+
+    private void setupRecurringSetting() {
+        binding.cardRecurringBills.setOnClickListener(v -> {
+            com.expensetracker.monthly.ui.dialog.ManageRecurringDialogFragment.newInstance()
+                    .show(getChildFragmentManager(), com.expensetracker.monthly.ui.dialog.ManageRecurringDialogFragment.TAG);
+        });
+    }
+
+    private void setupSecuritySetting() {
+        binding.switchAppLock.setChecked(com.expensetracker.monthly.util.BiometricUtils.isAppLockEnabled(requireContext()));
+        binding.switchAppLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (!com.expensetracker.monthly.util.BiometricUtils.isBiometricOrDeviceCredentialAvailable(requireContext())) {
+                    binding.switchAppLock.setChecked(false);
+                    Toast.makeText(requireContext(), R.string.biometric_not_supported, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                com.expensetracker.monthly.util.BiometricUtils.showBiometricPrompt(requireActivity(), new com.expensetracker.monthly.util.BiometricUtils.BiometricAuthListener() {
+                    @Override
+                    public void onSuccess() {
+                        com.expensetracker.monthly.util.BiometricUtils.setAppLockEnabled(requireContext(), true);
+                        Toast.makeText(requireContext(), R.string.app_lock_enabled, Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        binding.switchAppLock.setChecked(false);
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                com.expensetracker.monthly.util.BiometricUtils.setAppLockEnabled(requireContext(), false);
+                Toast.makeText(requireContext(), R.string.app_lock_disabled, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setupExportSetting() {
+        binding.cardExportStatements.setOnClickListener(v -> {
+            com.expensetracker.monthly.ui.dialog.ExportStatementDialogFragment.newInstance(System.currentTimeMillis())
+                    .show(getChildFragmentManager(), com.expensetracker.monthly.ui.dialog.ExportStatementDialogFragment.TAG);
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
         updateBudgetDisplay();
+        binding.switchAppLock.setChecked(com.expensetracker.monthly.util.BiometricUtils.isAppLockEnabled(requireContext()));
     }
 
     private void setupCurrencyPicker() {

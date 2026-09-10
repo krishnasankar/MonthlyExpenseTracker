@@ -1,6 +1,5 @@
 package com.expensetracker.monthly.ui.dialog;
 
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -18,6 +17,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.content.DialogInterface;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,37 +30,38 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.DialogInterface;
 import com.expensetracker.monthly.R;
 import com.expensetracker.monthly.data.entity.Category;
-import com.expensetracker.monthly.data.entity.Expense;
+import com.expensetracker.monthly.data.entity.RecurringExpense;
 import com.expensetracker.monthly.data.entity.Subcategory;
-import com.expensetracker.monthly.data.model.ExpenseAutofillSuggestion;
-import com.expensetracker.monthly.data.model.ExpenseWithDetails;
-import com.expensetracker.monthly.databinding.DialogAddExpenseBinding;
+import com.expensetracker.monthly.data.model.RecurringExpenseWithDetails;
+import com.expensetracker.monthly.databinding.DialogAddEditRecurringBinding;
 import com.expensetracker.monthly.databinding.DialogQuickAddCategoryBinding;
 import com.expensetracker.monthly.databinding.DialogQuickAddSubcategoryBinding;
 import com.expensetracker.monthly.ui.adapter.CategoryDropdownAdapter;
 import com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter;
 import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
-import com.expensetracker.monthly.ui.viewmodel.ExpenseViewModel;
+import com.expensetracker.monthly.ui.viewmodel.RecurringExpenseViewModel;
 import com.expensetracker.monthly.util.CurrencyUtils;
-import com.expensetracker.monthly.util.DateUtils;
+import com.expensetracker.monthly.util.RecurringExpenseManager;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
-public class AddEditExpenseDialogFragment extends DialogFragment {
+public class AddEditRecurringDialogFragment extends DialogFragment {
 
-    public static final String TAG = "AddEditExpenseDialog";
-    private static final String ARG_EXPENSE_ID = "arg_expense_id";
+    public static final String TAG = "AddEditRecurringDialog";
+
+    private static final String ARG_ID = "arg_id";
     private static final String ARG_TITLE = "arg_title";
     private static final String ARG_AMOUNT = "arg_amount";
-    private static final String ARG_DATE = "arg_date";
-    private static final String ARG_CATEGORY_ID = "arg_cat_id";
-    private static final String ARG_SUBCATEGORY_ID = "arg_subcat_id";
+    private static final String ARG_CAT_ID = "arg_cat_id";
+    private static final String ARG_SUBCAT_ID = "arg_subcat_id";
+    private static final String ARG_FREQUENCY = "arg_frequency";
+    private static final String ARG_DAY = "arg_day";
     private static final String ARG_NOTES = "arg_notes";
+    private static final String ARG_ACTIVE = "arg_active";
+    private static final String ARG_LAST_LOGGED = "arg_last_logged";
 
     private static final String[] PALETTE_COLORS = {
             "#FF7043", "#42A5F5", "#AB47BC", "#FFA726", "#26A69A",
@@ -68,11 +69,17 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
             "#8D6E63", "#78909C"
     };
 
-    private DialogAddExpenseBinding binding;
-    private ExpenseViewModel expenseViewModel;
+    private DialogAddEditRecurringBinding binding;
+    private RecurringExpenseViewModel recurringViewModel;
     private CategoryViewModel categoryViewModel;
 
-    private final Calendar selectedDate = Calendar.getInstance();
+    private boolean isEditMode = false;
+    private long editId = -1;
+    private long initialCategoryId = -1;
+    private Long initialSubcategoryId = null;
+    private boolean currentActive = true;
+    private long lastLoggedMillis = 0;
+
     private final List<Category> categoriesList = new ArrayList<>();
     private final List<Subcategory> subcategoriesList = new ArrayList<>();
     private LiveData<List<Subcategory>> subcategoriesLiveData = null;
@@ -80,26 +87,22 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
     private Category selectedCategory = null;
     private Subcategory selectedSubcategory = null;
 
-    private boolean isEditMode = false;
-    private long editExpenseId = -1;
-    private long initialCategoryId = -1;
-    private Long initialSubcategoryId = null;
-    private Long pendingAutofillSubcategoryId = null;
-    private final List<ExpenseAutofillSuggestion> autofillSuggestionsList = new ArrayList<>();
-
-    public static AddEditExpenseDialogFragment newInstance(@Nullable ExpenseWithDetails expense) {
-        AddEditExpenseDialogFragment fragment = new AddEditExpenseDialogFragment();
-        if (expense != null && expense.expense != null) {
+    public static AddEditRecurringDialogFragment newInstance(@Nullable RecurringExpenseWithDetails item) {
+        AddEditRecurringDialogFragment fragment = new AddEditRecurringDialogFragment();
+        if (item != null && item.recurringExpense != null) {
             Bundle args = new Bundle();
-            args.putLong(ARG_EXPENSE_ID, expense.expense.getId());
-            args.putString(ARG_TITLE, expense.expense.getTitle());
-            args.putDouble(ARG_AMOUNT, expense.expense.getAmount());
-            args.putLong(ARG_DATE, expense.expense.getDateMillis());
-            args.putLong(ARG_CATEGORY_ID, expense.expense.getCategoryId());
-            if (expense.expense.getSubcategoryId() != null) {
-                args.putLong(ARG_SUBCATEGORY_ID, expense.expense.getSubcategoryId());
+            args.putLong(ARG_ID, item.recurringExpense.getId());
+            args.putString(ARG_TITLE, item.recurringExpense.getTitle());
+            args.putDouble(ARG_AMOUNT, item.recurringExpense.getAmount());
+            args.putLong(ARG_CAT_ID, item.recurringExpense.getCategoryId());
+            if (item.recurringExpense.getSubcategoryId() != null) {
+                args.putLong(ARG_SUBCAT_ID, item.recurringExpense.getSubcategoryId());
             }
-            args.putString(ARG_NOTES, expense.expense.getNotes());
+            args.putString(ARG_FREQUENCY, item.recurringExpense.getFrequency());
+            args.putInt(ARG_DAY, item.recurringExpense.getDayOfMonth());
+            args.putString(ARG_NOTES, item.recurringExpense.getNotes());
+            args.putBoolean(ARG_ACTIVE, item.recurringExpense.isActive());
+            args.putLong(ARG_LAST_LOGGED, item.recurringExpense.getLastLoggedMillis());
             fragment.setArguments(args);
         }
         return fragment;
@@ -110,20 +113,22 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NORMAL, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog);
 
-        if (getArguments() != null && getArguments().containsKey(ARG_EXPENSE_ID)) {
+        if (getArguments() != null && getArguments().containsKey(ARG_ID)) {
             isEditMode = true;
-            editExpenseId = getArguments().getLong(ARG_EXPENSE_ID);
-            initialCategoryId = getArguments().getLong(ARG_CATEGORY_ID);
-            if (getArguments().containsKey(ARG_SUBCATEGORY_ID)) {
-                initialSubcategoryId = getArguments().getLong(ARG_SUBCATEGORY_ID);
+            editId = getArguments().getLong(ARG_ID);
+            initialCategoryId = getArguments().getLong(ARG_CAT_ID);
+            if (getArguments().containsKey(ARG_SUBCAT_ID)) {
+                initialSubcategoryId = getArguments().getLong(ARG_SUBCAT_ID);
             }
+            currentActive = getArguments().getBoolean(ARG_ACTIVE, true);
+            lastLoggedMillis = getArguments().getLong(ARG_LAST_LOGGED, 0);
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = DialogAddExpenseBinding.inflate(inflater, container, false);
+        binding = DialogAddEditRecurringBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
@@ -131,33 +136,37 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        expenseViewModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
+        recurringViewModel = new ViewModelProvider(requireActivity()).get(RecurringExpenseViewModel.class);
         categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
 
         String currencySymbol = CurrencyUtils.getCurrencySymbol(requireContext());
         binding.tilAmount.setPrefixText(currencySymbol + " ");
 
+        setupFrequencyDropdown();
+
         if (isEditMode) {
-            binding.tvDialogTitle.setText(R.string.edit_expense);
+            binding.tvDialogTitle.setText(R.string.edit_recurring_bill);
             binding.btnSave.setText(R.string.save);
             binding.etTitle.setText(getArguments().getString(ARG_TITLE, ""));
             double amount = getArguments().getDouble(ARG_AMOUNT, 0.0);
             binding.etAmount.setText(amount == Math.floor(amount) ? String.valueOf((long) amount) : String.valueOf(amount));
-            long dateMillis = getArguments().getLong(ARG_DATE, System.currentTimeMillis());
-            selectedDate.setTimeInMillis(dateMillis);
+            String rawFreq = getArguments().getString(ARG_FREQUENCY, RecurringExpense.FREQUENCY_MONTHLY);
+            binding.actvFrequency.setText(RecurringExpense.getFrequencyDisplayName(rawFreq), false);
+            binding.etDueDay.setText(String.valueOf(getArguments().getInt(ARG_DAY, 1)));
             binding.etNotes.setText(getArguments().getString(ARG_NOTES, ""));
+
+            binding.btnDelete.setVisibility(View.VISIBLE);
+            binding.btnDelete.setOnClickListener(v -> confirmDelete());
         } else {
-            binding.tvDialogTitle.setText(R.string.add_expense);
-            binding.btnSave.setText(R.string.save_expense_btn);
-            selectedDate.setTimeInMillis(System.currentTimeMillis());
+            binding.tvDialogTitle.setText(R.string.add_recurring_bill);
+            binding.btnSave.setText(R.string.save_bill_btn);
+            binding.actvFrequency.setText(RecurringExpense.getFrequencyDisplayName(RecurringExpense.FREQUENCY_MONTHLY), false);
+            binding.etDueDay.setText("1");
+            binding.btnDelete.setVisibility(View.GONE);
         }
 
-        updateDateField();
-        setupDateChips();
-
         binding.btnClose.setOnClickListener(v -> handleBackPress());
-        binding.btnCancel.setOnClickListener(v -> handleBackPress());
-        binding.btnSave.setOnClickListener(v -> saveExpense());
+        binding.btnSave.setOnClickListener(v -> saveRecurring());
 
         binding.btnAddCategory.setOnClickListener(v -> showQuickAddCategoryDialog());
         binding.btnAddSubcategory.setOnClickListener(v -> {
@@ -168,8 +177,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
             }
         });
 
-        observeCategories();
-        setupTitleAutofill();
+        setupCategoryObservers();
         setupInputActions();
         setupFocusAutoScroll();
         setupWindowInsetsHandling();
@@ -229,6 +237,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
 
         binding.etTitle.setOnFocusChangeListener(focusListener);
         binding.etAmount.setOnFocusChangeListener(focusListener);
+        binding.etDueDay.setOnFocusChangeListener(focusListener);
         binding.etNotes.setOnFocusChangeListener(focusListener);
     }
 
@@ -276,77 +285,49 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
     }
 
     private void setupInputActions() {
-        // Title input action: moves smoothly to Amount
         binding.etTitle.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         binding.etTitle.setOnEditorActionListener((v, actionId, event) -> {
-            boolean isEnterKey = event != null
-                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
-                    && event.getAction() == KeyEvent.ACTION_DOWN;
-            boolean isProceedAction = actionId == EditorInfo.IME_ACTION_NEXT
-                    || actionId == EditorInfo.IME_ACTION_DONE
-                    || actionId == EditorInfo.IME_ACTION_GO;
-
-            if (isProceedAction || isEnterKey) {
-                moveToAmountField();
+            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnterKeyDown(event)) {
+                binding.etAmount.requestFocus();
+                showKeyboardForView(binding.etAmount);
                 return true;
             }
             return false;
         });
 
-        binding.etTitle.setOnKeyListener((v, keyCode, event) -> {
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
-                moveToAmountField();
-                return true;
-            }
-            return false;
-        });
-
-        // Amount input action: moves smoothly to Notes (or user taps Save)
         binding.etAmount.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         binding.etAmount.setOnEditorActionListener((v, actionId, event) -> {
-            boolean isEnterKey = event != null
-                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
-                    && event.getAction() == KeyEvent.ACTION_DOWN;
-            boolean isProceedAction = actionId == EditorInfo.IME_ACTION_NEXT
-                    || actionId == EditorInfo.IME_ACTION_DONE
-                    || actionId == EditorInfo.IME_ACTION_GO;
-
-            if (isProceedAction || isEnterKey) {
-                moveToNotesField();
+            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnterKeyDown(event)) {
+                binding.etDueDay.requestFocus();
+                showKeyboardForView(binding.etDueDay);
                 return true;
             }
             return false;
         });
 
-        // Notes input action: Done saves expense
+        binding.etDueDay.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+        binding.etDueDay.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_NEXT || isEnterKeyDown(event)) {
+                binding.etNotes.requestFocus();
+                showKeyboardForView(binding.etNotes);
+                return true;
+            }
+            return false;
+        });
+
         binding.etNotes.setImeOptions(EditorInfo.IME_ACTION_DONE);
         binding.etNotes.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 hideKeyboard();
-                saveExpense();
+                saveRecurring();
                 return true;
             }
             return false;
         });
     }
 
-    private void moveToAmountField() {
-        if (binding == null) return;
-        binding.etTitle.dismissDropDown();
-        binding.etAmount.requestFocus();
-        if (binding.etAmount.getText() != null) {
-            binding.etAmount.setSelection(binding.etAmount.getText().length());
-        }
-        showKeyboardForView(binding.etAmount);
-    }
-
-    private void moveToNotesField() {
-        if (binding == null) return;
-        binding.etNotes.requestFocus();
-        if (binding.etNotes.getText() != null) {
-            binding.etNotes.setSelection(binding.etNotes.getText().length());
-        }
-        showKeyboardForView(binding.etNotes);
+    private boolean isEnterKeyDown(KeyEvent event) {
+        return event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN;
     }
 
     private void focusTitleFieldAndShowKeyboard() {
@@ -383,114 +364,67 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
         });
     }
 
-    private void setupDateChips() {
-        binding.chipToday.setOnClickListener(v -> {
-            selectedDate.setTimeInMillis(System.currentTimeMillis());
-            updateDateField();
-        });
-
-        binding.chipYesterday.setOnClickListener(v -> {
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_YEAR, -1);
-            selectedDate.setTimeInMillis(cal.getTimeInMillis());
-            updateDateField();
-        });
-
-        binding.chipPickDate.setOnClickListener(v -> showDatePicker());
-        binding.etDate.setOnClickListener(v -> showDatePicker());
-        binding.tilDate.setOnClickListener(v -> showDatePicker());
+    private void setupFrequencyDropdown() {
+        String[] frequencies = new String[]{
+                RecurringExpense.getFrequencyDisplayName(RecurringExpense.FREQUENCY_MONTHLY),
+                RecurringExpense.getFrequencyDisplayName(RecurringExpense.FREQUENCY_WEEKLY),
+                RecurringExpense.getFrequencyDisplayName(RecurringExpense.FREQUENCY_YEARLY)
+        };
+        ArrayAdapter<String> freqAdapter = new ArrayAdapter<>(
+                requireContext(), R.layout.item_dropdown_menu, frequencies);
+        binding.actvFrequency.setAdapter(freqAdapter);
+        binding.actvFrequency.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
     }
 
-    private void updateDateField() {
-        long millis = selectedDate.getTimeInMillis();
-        binding.etDate.setText(DateUtils.formatDate(millis));
-
-        // Sync chip state
-        Calendar today = Calendar.getInstance();
-        Calendar yesterday = Calendar.getInstance();
-        yesterday.add(Calendar.DAY_OF_YEAR, -1);
-
-        boolean isToday = isSameDay(selectedDate, today);
-        boolean isYesterday = isSameDay(selectedDate, yesterday);
-
-        binding.chipToday.setChecked(isToday);
-        binding.chipYesterday.setChecked(isYesterday);
-    }
-
-    private boolean isSameDay(Calendar c1, Calendar c2) {
-        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
-                && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);
-    }
-
-    private void showDatePicker() {
-        DatePickerDialog dialog = new DatePickerDialog(
-                requireContext(),
-                (view, year, month, dayOfMonth) -> {
-                    selectedDate.set(Calendar.YEAR, year);
-                    selectedDate.set(Calendar.MONTH, month);
-                    selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                    updateDateField();
-                },
-                selectedDate.get(Calendar.YEAR),
-                selectedDate.get(Calendar.MONTH),
-                selectedDate.get(Calendar.DAY_OF_MONTH)
-        );
-        dialog.show();
-    }
-
-    private void observeCategories() {
+    private void setupCategoryObservers() {
         categoryViewModel.getAllCategories().observe(getViewLifecycleOwner(), categories -> {
             categoriesList.clear();
             if (categories != null && !categories.isEmpty()) {
                 categoriesList.addAll(categories);
 
                 CategoryDropdownAdapter adapter = new CategoryDropdownAdapter(requireContext(), categoriesList);
-                binding.actCategory.setAdapter(adapter);
-                binding.actCategory.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
+                binding.actvCategory.setAdapter(adapter);
+                binding.actvCategory.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
 
-                // If editing, find initial category
                 if (selectedCategory == null && initialCategoryId > 0) {
-                    for (Category cat : categories) {
-                        if (cat.getId() == initialCategoryId) {
-                            selectedCategory = cat;
-                            binding.actCategory.setText(cat.getName(), false);
-                            loadSubcategories(cat.getId());
+                    for (Category c : categoriesList) {
+                        if (c.getId() == initialCategoryId) {
+                            selectedCategory = c;
+                            binding.actvCategory.setText(c.getName(), false);
+                            loadSubcategories(c.getId());
                             break;
                         }
                     }
-                } else if (selectedCategory == null && !categories.isEmpty()) {
-                    selectedCategory = categories.get(0);
-                    binding.actCategory.setText(selectedCategory.getName(), false);
+                } else if (selectedCategory == null && !categoriesList.isEmpty()) {
+                    selectedCategory = categoriesList.get(0);
+                    binding.actvCategory.setText(selectedCategory.getName(), false);
                     loadSubcategories(selectedCategory.getId());
                 } else if (selectedCategory != null) {
-                    // Update text in case name or color changed
-                    for (Category cat : categories) {
-                        if (cat.getId() == selectedCategory.getId()) {
-                            selectedCategory = cat;
-                            binding.actCategory.setText(cat.getName(), false);
+                    for (Category c : categoriesList) {
+                        if (c.getId() == selectedCategory.getId()) {
+                            selectedCategory = c;
+                            binding.actvCategory.setText(c.getName(), false);
                             break;
                         }
                     }
                 }
 
-                binding.actCategory.setOnItemClickListener((parent, view, position, id) -> {
+                binding.actvCategory.setOnItemClickListener((parent, v, position, id) -> {
                     CategoryDropdownAdapter.Item item = (CategoryDropdownAdapter.Item) parent.getItemAtPosition(position);
                     if (item != null) {
                         if (item.isAddAction) {
-                            // Restore previous category text
                             if (selectedCategory != null) {
-                                binding.actCategory.setText(selectedCategory.getName(), false);
+                                binding.actvCategory.setText(selectedCategory.getName(), false);
                             } else {
-                                binding.actCategory.setText("", false);
+                                binding.actvCategory.setText("", false);
                             }
                             showQuickAddCategoryDialog();
                         } else if (item.category != null) {
                             selectedCategory = item.category;
                             selectedSubcategory = null;
-                            pendingAutofillSubcategoryId = null;
-                            binding.actCategory.setText(selectedCategory.getName(), false);
+                            binding.actvCategory.setText(selectedCategory.getName(), false);
                             binding.tilCategory.setError(null);
-                            binding.actSubcategory.setText("", false);
+                            binding.actvSubcategory.setText("", false);
                             loadSubcategories(selectedCategory.getId());
                         }
                     }
@@ -511,116 +445,56 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
             }
 
             SubcategoryDropdownAdapter subAdapter = new SubcategoryDropdownAdapter(requireContext(), subcategoriesList);
-            binding.actSubcategory.setAdapter(subAdapter);
-            binding.actSubcategory.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
+            binding.actvSubcategory.setAdapter(subAdapter);
+            binding.actvSubcategory.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
 
             if (initialSubcategoryId != null && initialSubcategoryId > 0 && selectedSubcategory == null) {
                 for (Subcategory s : subcategoriesList) {
                     if (s.getId() == initialSubcategoryId) {
                         selectedSubcategory = s;
-                        binding.actSubcategory.setText(s.getName(), false);
+                        binding.actvSubcategory.setText(s.getName(), false);
                         break;
                     }
                 }
                 initialSubcategoryId = null;
-            } else if (pendingAutofillSubcategoryId != null) {
-                selectedSubcategory = null;
-                if (pendingAutofillSubcategoryId > 0) {
-                    for (Subcategory s : subcategoriesList) {
-                        if (s.getId() == (long) pendingAutofillSubcategoryId) {
-                            selectedSubcategory = s;
-                            binding.actSubcategory.setText(s.getName(), false);
-                            break;
-                        }
-                    }
-                }
-                if (selectedSubcategory == null) {
-                    binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
-                }
-                pendingAutofillSubcategoryId = null;
             } else if (selectedSubcategory != null) {
                 boolean exists = false;
                 for (Subcategory s : subcategoriesList) {
                     if (s.getId() == selectedSubcategory.getId()) {
                         selectedSubcategory = s;
-                        binding.actSubcategory.setText(s.getName(), false);
+                        binding.actvSubcategory.setText(s.getName(), false);
                         exists = true;
                         break;
                     }
                 }
                 if (!exists) {
                     selectedSubcategory = null;
-                    binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
+                    binding.actvSubcategory.setText(getString(R.string.expense_subcategory_none), false);
                 }
             } else {
-                binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
+                binding.actvSubcategory.setText(getString(R.string.expense_subcategory_none), false);
             }
 
-            binding.actSubcategory.setOnItemClickListener((parent, view, position, id) -> {
+            binding.actvSubcategory.setOnItemClickListener((parent, v, position, id) -> {
                 SubcategoryDropdownAdapter.Item item = (SubcategoryDropdownAdapter.Item) parent.getItemAtPosition(position);
                 if (item != null) {
                     if (item.isAddAction) {
                         if (selectedSubcategory != null) {
-                            binding.actSubcategory.setText(selectedSubcategory.getName(), false);
+                            binding.actvSubcategory.setText(selectedSubcategory.getName(), false);
                         } else {
-                            binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
+                            binding.actvSubcategory.setText(getString(R.string.expense_subcategory_none), false);
                         }
                         showQuickAddSubcategoryDialog();
                     } else if (item.isNone) {
                         selectedSubcategory = null;
-                        binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
+                        binding.actvSubcategory.setText(getString(R.string.expense_subcategory_none), false);
                     } else if (item.subcategory != null) {
                         selectedSubcategory = item.subcategory;
-                        binding.actSubcategory.setText(selectedSubcategory.getName(), false);
+                        binding.actvSubcategory.setText(selectedSubcategory.getName(), false);
                     }
                 }
             });
         });
-    }
-
-    private void setupTitleAutofill() {
-        expenseViewModel.getExpenseAutofillSuggestions().observe(getViewLifecycleOwner(), suggestions -> {
-            autofillSuggestionsList.clear();
-            if (suggestions != null && !suggestions.isEmpty()) {
-                autofillSuggestionsList.addAll(suggestions);
-                ArrayAdapter<ExpenseAutofillSuggestion> adapter = new ArrayAdapter<>(
-                        requireContext(),
-                        R.layout.item_dropdown_menu,
-                        new ArrayList<>(autofillSuggestionsList)
-                );
-                binding.etTitle.setAdapter(adapter);
-                binding.etTitle.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
-                binding.etTitle.setThreshold(1);
-            }
-        });
-
-        binding.etTitle.setOnItemClickListener((parent, view, position, id) -> {
-            Object item = parent.getItemAtPosition(position);
-            if (item instanceof ExpenseAutofillSuggestion) {
-                applyAutofillSuggestion((ExpenseAutofillSuggestion) item);
-            }
-            binding.etTitle.post(() -> {
-                if (binding != null && binding.etTitle.getText() != null) {
-                    binding.etTitle.setSelection(binding.etTitle.getText().length());
-                }
-            });
-        });
-    }
-
-    private void applyAutofillSuggestion(ExpenseAutofillSuggestion suggestion) {
-        long targetCatId = suggestion.getCategoryId();
-        for (Category cat : categoriesList) {
-            if (cat.getId() == targetCatId) {
-                selectedCategory = cat;
-                binding.actCategory.setText(cat.getName(), false);
-                binding.tilCategory.setError(null);
-
-                selectedSubcategory = null;
-                pendingAutofillSubcategoryId = suggestion.getSubcategoryId();
-                loadSubcategories(cat.getId());
-                break;
-            }
-        }
     }
 
     private void showQuickAddCategoryDialog() {
@@ -635,7 +509,6 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
             quickDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         }
 
-        // Setup color palette
         int padding = (int) (4 * getResources().getDisplayMetrics().density);
         int size = (int) (38 * getResources().getDisplayMetrics().density);
         final String[] selectedColorHex = {PALETTE_COLORS[0]};
@@ -673,11 +546,10 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                 return;
             }
 
-            // Check if already exists in list (case-insensitive)
             for (Category existing : categoriesList) {
                 if (existing.getName().equalsIgnoreCase(name)) {
                     selectedCategory = existing;
-                    binding.actCategory.setText(existing.getName(), false);
+                    binding.actvCategory.setText(existing.getName(), false);
                     binding.tilCategory.setError(null);
                     loadSubcategories(existing.getId());
                     quickDialog.dismiss();
@@ -692,7 +564,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     requireActivity().runOnUiThread(() -> {
                         if (success && createdCategory != null) {
                             selectedCategory = createdCategory;
-                            binding.actCategory.setText(createdCategory.getName(), false);
+                            binding.actvCategory.setText(createdCategory.getName(), false);
                             binding.tilCategory.setError(null);
                             loadSubcategories(createdCategory.getId());
                             quickDialog.dismiss();
@@ -742,7 +614,6 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
         }
 
         quickBinding.tvParentCategory.setText("Under: " + selectedCategory.getName());
-
         quickBinding.btnCancel.setOnClickListener(v -> quickDialog.dismiss());
 
         Runnable createAction = () -> {
@@ -752,11 +623,10 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                 return;
             }
 
-            // Check if already exists under this category
             for (Subcategory existing : subcategoriesList) {
                 if (existing.getName().equalsIgnoreCase(name)) {
                     selectedSubcategory = existing;
-                    binding.actSubcategory.setText(existing.getName(), false);
+                    binding.actvSubcategory.setText(existing.getName(), false);
                     binding.tilSubcategory.setError(null);
                     quickDialog.dismiss();
                     Toast.makeText(requireContext(), getString(R.string.subcategory_updated, existing.getName()), Toast.LENGTH_SHORT).show();
@@ -770,7 +640,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     requireActivity().runOnUiThread(() -> {
                         if (success && createdSubcategory != null) {
                             selectedSubcategory = createdSubcategory;
-                            binding.actSubcategory.setText(createdSubcategory.getName(), false);
+                            binding.actvSubcategory.setText(createdSubcategory.getName(), false);
                             binding.tilSubcategory.setError(null);
                             quickDialog.dismiss();
                             Toast.makeText(requireContext(), getString(R.string.subcategory_added, createdSubcategory.getName()), Toast.LENGTH_SHORT).show();
@@ -801,19 +671,16 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
         }, 150);
     }
 
-    private void saveExpense() {
+    private void saveRecurring() {
         String title = binding.etTitle.getText() != null ? binding.etTitle.getText().toString().trim() : "";
-        String amountStr = binding.etAmount.getText() != null ? binding.etAmount.getText().toString().trim() : "";
-        String notes = binding.etNotes.getText() != null ? binding.etNotes.getText().toString().trim() : "";
-
         if (title.isEmpty()) {
-            binding.tilTitle.setError(getString(R.string.error_required_fields));
+            binding.tilTitle.setError(getString(R.string.error_field_required));
             binding.scrollView.smoothScrollTo(0, binding.tilTitle.getTop());
             return;
-        } else {
-            binding.tilTitle.setError(null);
         }
+        binding.tilTitle.setError(null);
 
+        String amountStr = binding.etAmount.getText() != null ? binding.etAmount.getText().toString().trim() : "";
         double amount;
         try {
             amount = Double.parseDouble(amountStr);
@@ -822,45 +689,83 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                 binding.scrollView.smoothScrollTo(0, binding.tilAmount.getTop());
                 return;
             }
-            binding.tilAmount.setError(null);
         } catch (NumberFormatException e) {
             binding.tilAmount.setError(getString(R.string.error_invalid_amount));
             binding.scrollView.smoothScrollTo(0, binding.tilAmount.getTop());
             return;
         }
+        binding.tilAmount.setError(null);
 
         if (selectedCategory == null) {
-            binding.tilCategory.setError(getString(R.string.error_required_fields));
+            binding.tilCategory.setError(getString(R.string.error_select_category));
             binding.scrollView.smoothScrollTo(0, binding.tilCategory.getTop());
             return;
-        } else {
-            binding.tilCategory.setError(null);
         }
+        binding.tilCategory.setError(null);
 
+        String freqDisplay = binding.actvFrequency.getText().toString().trim();
+        String freq = RecurringExpense.parseFrequencyFromDisplay(freqDisplay);
+
+        String dayStr = binding.etDueDay.getText() != null ? binding.etDueDay.getText().toString().trim() : "";
+        int dueDay = 1;
+        try {
+            dueDay = Integer.parseInt(dayStr);
+            if (dueDay < 1 || dueDay > 31) {
+                binding.tilDueDay.setError("Day must be between 1 and 31");
+                binding.scrollView.smoothScrollTo(0, binding.tilDueDay.getTop());
+                return;
+            }
+        } catch (NumberFormatException e) {
+            binding.tilDueDay.setError("Enter a valid day (1–31)");
+            binding.scrollView.smoothScrollTo(0, binding.tilDueDay.getTop());
+            return;
+        }
+        binding.tilDueDay.setError(null);
+
+        String notes = binding.etNotes.getText() != null ? binding.etNotes.getText().toString().trim() : "";
         Long subcategoryId = selectedSubcategory != null ? selectedSubcategory.getId() : null;
 
         if (isEditMode) {
-            Expense updated = new Expense(title, amount, selectedDate.getTimeInMillis(), selectedCategory.getId(), subcategoryId, notes);
-            updated.setId(editExpenseId);
-            expenseViewModel.updateExpense(updated, () -> {
+            RecurringExpense recurring = new RecurringExpense(
+                    title, amount, selectedCategory.getId(), subcategoryId,
+                    freq, dueDay, lastLoggedMillis, currentActive, notes);
+            recurring.setId(editId);
+
+            recurringViewModel.updateRecurringExpense(recurring, () -> {
                 if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> {
-                        Toast.makeText(requireContext(), "Expense updated", Toast.LENGTH_SHORT).show();
-                        dismiss();
-                    });
+                    RecurringExpenseManager.checkAndProcessRecurringExpenses(requireContext().getApplicationContext());
                 }
             });
         } else {
-            Expense newExpense = new Expense(title, amount, selectedDate.getTimeInMillis(), selectedCategory.getId(), subcategoryId, notes);
-            expenseViewModel.insertExpense(newExpense, () -> {
+            RecurringExpense recurring = new RecurringExpense(
+                    title, amount, selectedCategory.getId(), subcategoryId,
+                    freq, dueDay, 0L, true, notes);
+
+            recurringViewModel.insertRecurringExpense(recurring, () -> {
                 if (isAdded()) {
-                    requireActivity().runOnUiThread(() -> {
-                        Toast.makeText(requireContext(), "Expense added", Toast.LENGTH_SHORT).show();
-                        dismiss();
-                    });
+                    RecurringExpenseManager.checkAndProcessRecurringExpenses(requireContext().getApplicationContext());
                 }
             });
         }
+
+        Toast.makeText(requireContext(), R.string.saved_successfully, Toast.LENGTH_SHORT).show();
+        dismiss();
+    }
+
+    private void confirmDelete() {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.delete_recurring_bill)
+                .setMessage(getString(R.string.delete_recurring_confirm, binding.etTitle.getText().toString()))
+                .setPositiveButton(R.string.delete, (dialog, which) -> {
+                    RecurringExpense item = new RecurringExpense(
+                            "", 0.0, 0, null, "MONTHLY", 1, 0L, false, null);
+                    item.setId(editId);
+                    recurringViewModel.deleteRecurringExpense(item, null);
+                    Toast.makeText(requireContext(), R.string.deleted_successfully, Toast.LENGTH_SHORT).show();
+                    dismiss();
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
 
     @Override

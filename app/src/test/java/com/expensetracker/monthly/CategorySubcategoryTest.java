@@ -90,4 +90,49 @@ public class CategorySubcategoryTest {
         assertTrue(existingName.equalsIgnoreCase(newNameUpper));
         assertTrue(existingName.equalsIgnoreCase(newNamePadded.trim()));
     }
+
+    @Test
+    public void testCategoryDropdownItemModel() {
+        Category cat = new Category("Travel", "#8D6E63", "custom");
+        cat.setId(42L);
+
+        com.expensetracker.monthly.ui.adapter.CategoryDropdownAdapter.Item catItem =
+                new com.expensetracker.monthly.ui.adapter.CategoryDropdownAdapter.Item(cat);
+        assertEquals("Travel", catItem.title);
+        assertEquals("Travel", catItem.toString());
+        assertNotNull(catItem.category);
+        assertEquals(42L, catItem.category.getId());
+        assertEquals(false, catItem.isAddAction);
+
+        com.expensetracker.monthly.ui.adapter.CategoryDropdownAdapter.Item actionItem =
+                new com.expensetracker.monthly.ui.adapter.CategoryDropdownAdapter.Item("+ Add New Category…", true);
+        assertEquals("+ Add New Category…", actionItem.title);
+        assertEquals(true, actionItem.isAddAction);
+        org.junit.Assert.assertNull(actionItem.category);
+    }
+
+    @Test
+    public void testSubcategoryDropdownItemModel() {
+        Subcategory sub = new Subcategory(10L, "Flight Tickets");
+        sub.setId(99L);
+
+        com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter.Item subItem =
+                new com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter.Item(sub);
+        assertEquals("Flight Tickets", subItem.title);
+        assertEquals(false, subItem.isNone);
+        assertEquals(false, subItem.isAddAction);
+        assertNotNull(subItem.subcategory);
+
+        com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter.Item noneItem =
+                new com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter.Item("None", true, false);
+        assertEquals("None", noneItem.title);
+        assertEquals(true, noneItem.isNone);
+        assertEquals(false, noneItem.isAddAction);
+
+        com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter.Item actionItem =
+                new com.expensetracker.monthly.ui.adapter.SubcategoryDropdownAdapter.Item("+ Add New Subcategory…", false, true);
+        assertEquals("+ Add New Subcategory…", actionItem.title);
+        assertEquals(false, actionItem.isNone);
+        assertEquals(true, actionItem.isAddAction);
+    }
 }

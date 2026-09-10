@@ -74,7 +74,11 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="error_required_fields">Please fill in all required fields.</string>
+    <string name="error_field_required">This field is required.</string>
     <string name="error_invalid_amount">Please enter a valid amount.</string>
+    <string name="error_select_category">Please select a category.</string>
+    <string name="saved_successfully">Saved successfully</string>
+    <string name="deleted_successfully">Deleted successfully</string>
 
     <!-- About & Branding -->
     <string name="about_title">About App</string>
@@ -126,4 +130,78 @@
     <string name="category_budget_badge">Limit: %1$s</string>
     <string name="category_no_budget_badge">+ Budget</string>
     <string name="category_breakdown_hint">Tap a category to set or edit its monthly budget</string>
+
+    <!-- Shortcuts & Quick Settings Tile -->
+    <string name="shortcut_add_expense_short">+ Expense</string>
+    <string name="shortcut_add_expense_long">Log a new expense</string>
+    <string name="shortcut_view_dashboard_short">Dashboard</string>
+    <string name="shortcut_view_dashboard_long">View spending dashboard</string>
+    <string name="shortcut_view_expenses_short">Expenses</string>
+    <string name="shortcut_view_expenses_long">View all recorded expenses</string>
+    <string name="quick_add_tile_label">+ Expense</string>
+
+    <!-- Biometric App Lock -->
+    <string name="security_title">Security &amp; Privacy</string>
+    <string name="app_lock">Biometric App Lock</string>
+    <string name="app_lock_desc">Require fingerprint, face, or device PIN to access app</string>
+    <string name="app_lock_enabled">App Lock Enabled</string>
+    <string name="app_lock_disabled">App Lock Disabled</string>
+    <string name="biometric_prompt_title">Unlock Monthly Expense Tracker</string>
+    <string name="biometric_prompt_subtitle">Confirm your identity to view your expenses</string>
+    <string name="biometric_unlock_app">Unlock</string>
+    <string name="biometric_locked_hint">App is locked. Tap Unlock to verify identity.</string>
+    <string name="biometric_not_supported">Device lock credentials not configured or unsupported</string>
+
+    <!-- Recurring Expenses -->
+    <string name="recurring_bills_title">Recurring Bills &amp; Subscriptions</string>
+    <string name="recurring_bills_desc">Track and automatically log rent, subscriptions, and recurring bills</string>
+    <string name="add_recurring_bill">Add Recurring Bill</string>
+    <string name="edit_recurring_bill">Edit Recurring Bill</string>
+    <string name="delete_recurring_bill">Delete Recurring Bill</string>
+    <string name="delete_recurring_confirm">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="recurring_frequency_label">Frequency</string>
+    <string name="frequency_monthly">Monthly</string>
+    <string name="frequency_weekly">Weekly</string>
+    <string name="frequency_yearly">Yearly</string>
+    <string name="due_day_label">Day of Month (1–31)</string>
+    <string name="due_day_hint">e.g. 5 for 5th of every month</string>
+    <string name="due_day_format">Due on day %1$d</string>
+    <string name="recurring_status_active">Active</string>
+    <string name="recurring_status_paused">Paused</string>
+    <string name="no_recurring_bills">No recurring subscriptions added yet.\nTap \'+ Add\' to track monthly commitments.</string>
+    <string name="recurring_auto_logged">%1$s auto-logged for this month</string>
+
+    <!-- Multi-Month Analytics -->
+    <string name="multi_month_trends">6-Month Spending Trends</string>
+    <string name="multi_month_trends_desc">Month-over-month trajectory comparison</string>
+    <string name="monthly_average_label">6-Mo Avg</string>
+    <string name="current_month_badge">Current</string>
+
+    <!-- Export Statements -->
+    <string name="export_data_title">Data &amp; Export</string>
+    <string name="export_statements">Export Statement</string>
+    <string name="export_statements_desc">Generate formatted PDF statement or CSV spreadsheet</string>
+    <string name="export_format">Export Format</string>
+    <string name="format_pdf">PDF Statement</string>
+    <string name="format_csv">CSV Spreadsheet</string>
+    <string name="export_range">Date Range</string>
+    <string name="range_current_month">Current Selected Month</string>
+    <string name="range_all_time">All Recorded Expenses</string>
+    <string name="btn_export_share">Export &amp; Share</string>
+    <string name="export_success">Statement exported successfully</string>
+    <string name="export_empty">No expenses found for the selected period to export</string>
+    <string name="statement_title">Monthly Expense Statement</string>
+    
+    <!-- Redesigned Add/Edit Dialogs & On-the-fly Category Creation -->
+    <string name="add_new_category_action">+ Add New Category…</string>
+    <string name="add_new_subcategory_action">+ Add New Subcategory…</string>
+    <string name="create_category_title">New Category</string>
+    <string name="create_subcategory_title">New Subcategory</string>
+    <string name="create">Create</string>
+    <string name="date_today">Today</string>
+    <string name="date_yesterday">Yesterday</string>
+    <string name="date_custom">Pick Date</string>
+    <string name="select_category_first">Please select a category first</string>
+    <string name="save_expense_btn">Save Expense</string>
+    <string name="save_bill_btn">Save Bill</string>
 </resources>

@@ -11,16 +11,18 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.expensetracker.monthly.data.dao.CategoryDao;
 import com.expensetracker.monthly.data.dao.ExpenseDao;
 import com.expensetracker.monthly.data.dao.SubcategoryDao;
+import com.expensetracker.monthly.data.dao.RecurringExpenseDao;
 import com.expensetracker.monthly.data.entity.Category;
-import com.expensetracker.monthly.data.entity.Subcategory;
 import com.expensetracker.monthly.data.entity.Expense;
+import com.expensetracker.monthly.data.entity.RecurringExpense;
+import com.expensetracker.monthly.data.entity.Subcategory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Database(
-    entities = {Category.class, Subcategory.class, Expense.class},
-    version = 3,
+    entities = {Category.class, Subcategory.class, Expense.class, RecurringExpense.class},
+    version = 4,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -37,9 +39,31 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    public static final androidx.room.migration.Migration MIGRATION_3_4 = new androidx.room.migration.Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS recurring_expenses (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "title TEXT NOT NULL, " +
+                    "amount REAL NOT NULL, " +
+                    "category_id INTEGER NOT NULL, " +
+                    "subcategory_id INTEGER, " +
+                    "frequency TEXT NOT NULL DEFAULT 'MONTHLY', " +
+                    "day_of_month INTEGER NOT NULL DEFAULT 1, " +
+                    "last_logged_millis INTEGER NOT NULL DEFAULT 0, " +
+                    "is_active INTEGER NOT NULL DEFAULT 1, " +
+                    "notes TEXT, " +
+                    "FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE, " +
+                    "FOREIGN KEY(subcategory_id) REFERENCES subcategories(id) ON DELETE SET NULL)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_recurring_expenses_category_id ON recurring_expenses(category_id)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS index_recurring_expenses_subcategory_id ON recurring_expenses(subcategory_id)");
+        }
+    };
+
     public abstract CategoryDao categoryDao();
     public abstract SubcategoryDao subcategoryDao();
     public abstract ExpenseDao expenseDao();
+    public abstract RecurringExpenseDao recurringExpenseDao();
 
     public static AppDatabase getInstance(final Context context) {
         if (INSTANCE == null) {
@@ -50,7 +74,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             DATABASE_NAME
                     )
-                    .addMigrations(MIGRATION_2_3)
+                    .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration()
                     .addCallback(sRoomDatabaseCallback)
                     .build();

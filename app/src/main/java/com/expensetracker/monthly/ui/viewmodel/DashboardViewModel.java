@@ -25,6 +25,7 @@ public class DashboardViewModel extends AndroidViewModel {
     private final LiveData<Integer> expenseCount;
     private final LiveData<List<CategorySpendSummary>> categorySpend;
     private final LiveData<List<ExpenseWithDetails>> recentExpenses;
+    private final LiveData<List<com.expensetracker.monthly.data.model.MonthlySpendBarData>> multiMonthSpend;
 
     public DashboardViewModel(@NonNull Application application) {
         super(application);
@@ -58,6 +59,45 @@ public class DashboardViewModel extends AndroidViewModel {
             long start = DateUtils.getStartOfMonthMillis(month);
             long end = DateUtils.getEndOfMonthMillis(month);
             return repository.getRecentExpensesForMonth(start, end, 5);
+        });
+
+        multiMonthSpend = Transformations.switchMap(selectedMonth, month -> {
+            Calendar startCal = (Calendar) month.clone();
+            startCal.add(Calendar.MONTH, -5);
+            long rangeStart = DateUtils.getStartOfMonthMillis(startCal);
+            long rangeEnd = DateUtils.getEndOfMonthMillis(month);
+
+            return Transformations.map(repository.getExpensesForMonth(rangeStart, rangeEnd), expenses -> {
+                List<com.expensetracker.monthly.data.model.MonthlySpendBarData> result = new java.util.ArrayList<>();
+                java.text.SimpleDateFormat shortFmt = new java.text.SimpleDateFormat("MMM", java.util.Locale.getDefault());
+                java.text.SimpleDateFormat fullFmt = new java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.getDefault());
+
+                for (int i = 5; i >= 0; i--) {
+                    Calendar mCal = (Calendar) month.clone();
+                    mCal.add(Calendar.MONTH, -i);
+                    long mStart = DateUtils.getStartOfMonthMillis(mCal);
+                    long mEnd = DateUtils.getEndOfMonthMillis(mCal);
+
+                    double sum = 0.0;
+                    if (expenses != null) {
+                        for (ExpenseWithDetails e : expenses) {
+                            if (e.expense != null && e.expense.getDateMillis() >= mStart && e.expense.getDateMillis() <= mEnd) {
+                                sum += e.expense.getAmount();
+                            }
+                        }
+                    }
+
+                    boolean isCurrent = (i == 0);
+                    result.add(new com.expensetracker.monthly.data.model.MonthlySpendBarData(
+                            shortFmt.format(mCal.getTime()),
+                            fullFmt.format(mCal.getTime()),
+                            sum,
+                            isCurrent,
+                            mCal
+                    ));
+                }
+                return result;
+            });
         });
     }
 
@@ -105,6 +145,10 @@ public class DashboardViewModel extends AndroidViewModel {
 
     public LiveData<List<ExpenseWithDetails>> getRecentExpenses() {
         return recentExpenses;
+    }
+
+    public LiveData<List<com.expensetracker.monthly.data.model.MonthlySpendBarData>> getMultiMonthSpend() {
+        return multiMonthSpend;
     }
 
     private final MutableLiveData<Double> monthlyBudget = new MutableLiveData<>();

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_expense"
+        android:enabled="true"
+        android:icon="@drawable/ic_widget_add"
+        android:shortcutShortLabel="@string/shortcut_add_expense_short"
+        android:shortcutLongLabel="@string/shortcut_add_expense_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.expensetracker.monthly"
+            android:targetClass="com.expensetracker.monthly.ui.MainActivity">
+            <extra
+                android:name="EXTRA_OPEN_ADD_EXPENSE"
+                android:value="true" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="view_dashboard"
+        android:enabled="true"
+        android:icon="@drawable/ic_dashboard"
+        android:shortcutShortLabel="@string/shortcut_view_dashboard_short"
+        android:shortcutLongLabel="@string/shortcut_view_dashboard_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.expensetracker.monthly"
+            android:targetClass="com.expensetracker.monthly.ui.MainActivity">
+            <extra
+                android:name="EXTRA_NAVIGATE_TAB"
+                android:value="dashboard" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="view_expenses"
+        android:enabled="true"
+        android:icon="@drawable/ic_receipt"
+        android:shortcutShortLabel="@string/shortcut_view_expenses_short"
+        android:shortcutLongLabel="@string/shortcut_view_expenses_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.expensetracker.monthly"
+            android:targetClass="com.expensetracker.monthly.ui.MainActivity">
+            <extra
+                android:name="EXTRA_NAVIGATE_TAB"
+                android:value="expenses" />
+        </intent>
+    </shortcut>
+</shortcuts>

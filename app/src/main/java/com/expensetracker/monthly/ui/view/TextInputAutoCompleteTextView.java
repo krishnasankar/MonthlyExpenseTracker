@@ -143,24 +143,4 @@ public class TextInputAutoCompleteTextView extends AppCompatAutoCompleteTextView
             }
         }
     }
-
-    public interface OnBackPressedListener {
-        boolean onBackPressed();
-    }
-
-    private OnBackPressedListener onBackPressedListener;
-
-    public void setOnBackPressedListener(OnBackPressedListener listener) {
-        this.onBackPressedListener = listener;
-    }
-
-    @Override
-    public boolean onKeyPreIme(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-            if (onBackPressedListener != null && onBackPressedListener.onBackPressed()) {
-                return true;
-            }
-        }
-        return super.onKeyPreIme(keyCode, event);
-    }
 }

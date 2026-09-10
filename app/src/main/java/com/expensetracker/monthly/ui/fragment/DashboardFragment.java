@@ -275,6 +275,11 @@ public class DashboardFragment extends Fragment {
             }
         });
 
+        dashboardViewModel.getMultiMonthSpend().observe(getViewLifecycleOwner(), barDataList -> {
+            currentCurrency = CurrencyUtils.getCurrencySymbol(requireContext());
+            binding.chartMultiMonth.setData(barDataList, currentCurrency);
+        });
+
         dashboardViewModel.getRecentExpenses().observe(getViewLifecycleOwner(), expenses -> {
             if (expenses != null && !expenses.isEmpty()) {
                 binding.rvRecentExpenses.setVisibility(View.VISIBLE);
