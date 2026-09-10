@@ -22,6 +22,7 @@ import com.expensetracker.monthly.R;
 import com.expensetracker.monthly.data.entity.Category;
 import com.expensetracker.monthly.data.entity.Expense;
 import com.expensetracker.monthly.data.entity.Subcategory;
+import com.expensetracker.monthly.data.model.ExpenseAutofillSuggestion;
 import com.expensetracker.monthly.data.model.ExpenseWithDetails;
 import com.expensetracker.monthly.databinding.DialogAddExpenseBinding;
 import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
@@ -51,6 +52,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
     private final Calendar selectedDate = Calendar.getInstance();
     private final List<Category> categoriesList = new ArrayList<>();
     private final List<Subcategory> subcategoriesList = new ArrayList<>();
+    private androidx.lifecycle.LiveData<List<Subcategory>> subcategoriesLiveData = null;
 
     private Category selectedCategory = null;
     private Subcategory selectedSubcategory = null;
@@ -59,6 +61,8 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
     private long editExpenseId = -1;
     private long initialCategoryId = -1;
     private Long initialSubcategoryId = null;
+    private Long pendingAutofillSubcategoryId = null;
+    private final List<ExpenseAutofillSuggestion> autofillSuggestionsList = new ArrayList<>();
 
     public static AddEditExpenseDialogFragment newInstance(@Nullable ExpenseWithDetails expense) {
         AddEditExpenseDialogFragment fragment = new AddEditExpenseDialogFragment();
@@ -131,6 +135,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
         binding.btnSave.setOnClickListener(v -> saveExpense());
 
         observeCategories();
+        setupTitleAutofill();
     }
 
     @Override
@@ -205,6 +210,7 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                 binding.actCategory.setOnItemClickListener((parent, view, position, id) -> {
                     selectedCategory = categoriesList.get(position);
                     selectedSubcategory = null;
+                    pendingAutofillSubcategoryId = null;
                     binding.actSubcategory.setText("", false);
                     loadSubcategories(selectedCategory.getId());
                 });
@@ -213,7 +219,11 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
     }
 
     private void loadSubcategories(long categoryId) {
-        categoryViewModel.getSubcategoriesForCategory(categoryId).observe(getViewLifecycleOwner(), subcategories -> {
+        if (subcategoriesLiveData != null) {
+            subcategoriesLiveData.removeObservers(getViewLifecycleOwner());
+        }
+        subcategoriesLiveData = categoryViewModel.getSubcategoriesForCategory(categoryId);
+        subcategoriesLiveData.observe(getViewLifecycleOwner(), subcategories -> {
             subcategoriesList.clear();
             List<String> subNames = new ArrayList<>();
             subNames.add(getString(R.string.expense_subcategory_none));
@@ -242,6 +252,21 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                     }
                 }
                 initialSubcategoryId = null; // Clear so subsequent category switches don't re-select it
+            } else if (pendingAutofillSubcategoryId != null) {
+                selectedSubcategory = null;
+                if (pendingAutofillSubcategoryId > 0) {
+                    for (Subcategory s : subcategoriesList) {
+                        if (s.getId() == (long) pendingAutofillSubcategoryId) {
+                            selectedSubcategory = s;
+                            binding.actSubcategory.setText(s.getName(), false);
+                            break;
+                        }
+                    }
+                }
+                if (selectedSubcategory == null) {
+                    binding.actSubcategory.setText(getString(R.string.expense_subcategory_none), false);
+                }
+                pendingAutofillSubcategoryId = null; // Clear so subsequent manual category switches don't re-select it
             } else if (selectedSubcategory != null) {
                 binding.actSubcategory.setText(selectedSubcategory.getName(), false);
             } else {
@@ -256,6 +281,51 @@ public class AddEditExpenseDialogFragment extends DialogFragment {
                 }
             });
         });
+    }
+
+    private void setupTitleAutofill() {
+        expenseViewModel.getExpenseAutofillSuggestions().observe(getViewLifecycleOwner(), suggestions -> {
+            autofillSuggestionsList.clear();
+            if (suggestions != null && !suggestions.isEmpty()) {
+                autofillSuggestionsList.addAll(suggestions);
+                ArrayAdapter<ExpenseAutofillSuggestion> adapter = new ArrayAdapter<>(
+                        requireContext(),
+                        R.layout.item_dropdown_menu,
+                        new ArrayList<>(autofillSuggestionsList)
+                );
+                binding.etTitle.setAdapter(adapter);
+                binding.etTitle.setDropDownBackgroundResource(R.drawable.bg_popup_menu);
+                binding.etTitle.setThreshold(1);
+            }
+        });
+
+        binding.etTitle.setOnItemClickListener((parent, view, position, id) -> {
+            Object item = parent.getItemAtPosition(position);
+            if (item instanceof ExpenseAutofillSuggestion) {
+                applyAutofillSuggestion((ExpenseAutofillSuggestion) item);
+            }
+            binding.etTitle.post(() -> {
+                if (binding != null && binding.etTitle.getText() != null) {
+                    binding.etTitle.setSelection(binding.etTitle.getText().length());
+                }
+            });
+        });
+    }
+
+    private void applyAutofillSuggestion(ExpenseAutofillSuggestion suggestion) {
+        long targetCatId = suggestion.getCategoryId();
+        for (Category cat : categoriesList) {
+            if (cat.getId() == targetCatId) {
+                selectedCategory = cat;
+                binding.actCategory.setText(cat.getName(), false);
+                binding.tilCategory.setError(null);
+
+                selectedSubcategory = null;
+                pendingAutofillSubcategoryId = suggestion.getSubcategoryId();
+                loadSubcategories(cat.getId());
+                break;
+            }
+        }
     }
 
     private void saveExpense() {

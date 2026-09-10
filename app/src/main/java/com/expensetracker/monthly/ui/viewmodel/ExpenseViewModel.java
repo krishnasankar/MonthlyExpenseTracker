@@ -9,6 +9,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.expensetracker.monthly.data.entity.Expense;
+import com.expensetracker.monthly.data.model.ExpenseAutofillSuggestion;
 import com.expensetracker.monthly.data.model.ExpenseWithDetails;
 import com.expensetracker.monthly.data.repository.ExpenseRepository;
 import com.expensetracker.monthly.util.DateUtils;
@@ -131,5 +132,9 @@ public class ExpenseViewModel extends AndroidViewModel {
 
     public void deleteExpenseById(long id, Runnable onComplete) {
         repository.deleteExpenseById(id, onComplete);
+    }
+
+    public LiveData<List<ExpenseAutofillSuggestion>> getExpenseAutofillSuggestions() {
+        return repository.getExpenseAutofillSuggestions();
     }
 }

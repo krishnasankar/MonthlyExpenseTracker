@@ -35,12 +35,15 @@
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusTopStart="10dp">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.expensetracker.monthly.ui.view.TextInputAutoCompleteTextView
                 android:id="@+id/et_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/expense_title_label"
                 android:inputType="textCapSentences"
+                android:completionThreshold="1"
+                android:popupBackground="@drawable/bg_popup_menu"
+                android:dropDownVerticalOffset="4dp"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 

@@ -13,6 +13,7 @@ import com.expensetracker.monthly.data.entity.Expense;
 import com.expensetracker.monthly.data.entity.Subcategory;
 import com.expensetracker.monthly.data.model.CategorySpendSummary;
 import com.expensetracker.monthly.data.model.CategoryWithSubcategories;
+import com.expensetracker.monthly.data.model.ExpenseAutofillSuggestion;
 import com.expensetracker.monthly.data.model.ExpenseWithDetails;
 
 import java.util.Calendar;
@@ -158,6 +159,10 @@ public class ExpenseRepository {
                 onComplete.run();
             }
         });
+    }
+
+    public LiveData<List<ExpenseAutofillSuggestion>> getExpenseAutofillSuggestions() {
+        return expenseDao.getExpenseAutofillSuggestionsLive();
     }
 
     public interface OnCategoryInsertedListener {

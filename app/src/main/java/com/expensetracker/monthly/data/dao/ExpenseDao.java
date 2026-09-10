@@ -11,6 +11,7 @@ import androidx.room.Update;
 
 import com.expensetracker.monthly.data.entity.Expense;
 import com.expensetracker.monthly.data.model.CategorySpendSummary;
+import com.expensetracker.monthly.data.model.ExpenseAutofillSuggestion;
 import com.expensetracker.monthly.data.model.ExpenseWithDetails;
 
 import java.util.List;
@@ -80,4 +81,11 @@ public interface ExpenseDao {
 
     @Query("DELETE FROM expenses")
     void deleteAll();
+
+    @Query("SELECT title, category_id, subcategory_id, MAX(date_millis) AS max_date " +
+           "FROM expenses " +
+           "WHERE TRIM(title) != '' " +
+           "GROUP BY LOWER(TRIM(title)) " +
+           "ORDER BY max_date DESC")
+    LiveData<List<ExpenseAutofillSuggestion>> getExpenseAutofillSuggestionsLive();
 }
