@@ -20,6 +20,9 @@ public class CategorySpendSummary {
     @ColumnInfo(name = "transaction_count")
     public int transactionCount;
 
+    @ColumnInfo(name = "budget_amount")
+    public double budgetAmount;
+
     // Computed dynamically
     @Ignore
     public float percentage;
@@ -50,5 +53,9 @@ public class CategorySpendSummary {
 
     public void setPercentage(float percentage) {
         this.percentage = percentage;
+    }
+
+    public double getBudgetAmount() {
+        return budgetAmount;
     }
 }

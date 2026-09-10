@@ -8,12 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.expensetracker.monthly.R;
 import com.expensetracker.monthly.data.entity.Category;
 import com.expensetracker.monthly.data.entity.Subcategory;
 import com.expensetracker.monthly.data.model.CategoryWithSubcategories;
 import com.expensetracker.monthly.databinding.ItemCategoryManageBinding;
+import com.expensetracker.monthly.util.CurrencyUtils;
 import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
@@ -23,8 +26,11 @@ public class CategoryExpandableAdapter extends RecyclerView.Adapter<CategoryExpa
 
     public interface OnCategoryManageListener {
         void onAddSubcategory(Category category);
+        void onEditCategory(Category category);
         void onDeleteCategory(Category category);
+        void onEditSubcategory(Category category, Subcategory subcategory);
         void onDeleteSubcategory(Subcategory subcategory);
+        void onEditCategoryBudget(Category category);
     }
 
     private final List<CategoryWithSubcategories> items = new ArrayList<>();
@@ -79,6 +85,26 @@ public class CategoryExpandableAdapter extends RecyclerView.Adapter<CategoryExpa
             final Context context = binding.getRoot().getContext();
 
             binding.tvCategoryName.setText(category.getName());
+            binding.tvCategoryName.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onEditCategory(category);
+                }
+            });
+
+            String currency = CurrencyUtils.getCurrencySymbol(context);
+            if (category.getBudgetAmount() > 0.0) {
+                binding.tvCategoryBudgetBadge.setText(String.format(context.getString(R.string.category_budget_badge), CurrencyUtils.formatAmount(category.getBudgetAmount(), currency)));
+                binding.tvCategoryBudgetBadge.setTextColor(ContextCompat.getColor(context, R.color.primary));
+            } else {
+                binding.tvCategoryBudgetBadge.setText(R.string.category_no_budget_badge);
+                binding.tvCategoryBudgetBadge.setTextColor(ContextCompat.getColor(context, R.color.text_secondary));
+            }
+
+            binding.tvCategoryBudgetBadge.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onEditCategoryBudget(category);
+                }
+            });
 
             int color;
             try {
@@ -91,6 +117,12 @@ public class CategoryExpandableAdapter extends RecyclerView.Adapter<CategoryExpa
             binding.btnAddSubcategory.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onAddSubcategory(category);
+                }
+            });
+
+            binding.btnEditCategory.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onEditCategory(category);
                 }
             });
 
@@ -110,10 +142,21 @@ public class CategoryExpandableAdapter extends RecyclerView.Adapter<CategoryExpa
                     Chip chip = new Chip(context);
                     chip.setText(sub.getName());
                     chip.setCloseIconVisible(true);
-                    chip.setClickable(false);
+                    chip.setClickable(true);
                     chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#F1F3F5")));
                     chip.setTextColor(Color.parseColor("#212121"));
                     chip.setTextSize(12);
+                    chip.setChipIconResource(R.drawable.ic_edit);
+                    chip.setChipIconVisible(true);
+                    chip.setChipIconSize((int) (14 * context.getResources().getDisplayMetrics().density));
+                    chip.setChipIconTint(ColorStateList.valueOf(Color.parseColor("#757575")));
+                    androidx.appcompat.widget.TooltipCompat.setTooltipText(chip, context.getString(R.string.edit_subcategory));
+
+                    chip.setOnClickListener(v -> {
+                        if (listener != null) {
+                            listener.onEditSubcategory(category, sub);
+                        }
+                    });
 
                     chip.setOnCloseIconClickListener(v -> {
                         if (listener != null) {

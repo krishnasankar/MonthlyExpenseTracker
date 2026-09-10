@@ -42,4 +42,11 @@
     <!-- Status -->
     <color name="badge_bg">#1B382B</color>
     <color name="badge_text">#81C784</color>
+
+    <!-- Budget & Action Colors -->
+    <color name="budget_safe">#81C784</color>
+    <color name="budget_warning">#FFB74D</color>
+    <color name="budget_error">#EF5350</color>
+    <color name="swipe_delete_bg">#B71C1C</color>
+    <color name="widget_bg">#1E1E1E</color>
 </resources>

@@ -50,7 +50,7 @@ public interface ExpenseDao {
     @Query("SELECT * FROM expenses WHERE date_millis >= :startMillis AND date_millis <= :endMillis ORDER BY date_millis DESC, id DESC LIMIT :limit")
     LiveData<List<ExpenseWithDetails>> getRecentExpensesForDateRangeLive(long startMillis, long endMillis, int limit);
 
-    @Query("SELECT c.id AS category_id, c.name AS category_name, c.color_hex AS color_hex, " +
+    @Query("SELECT c.id AS category_id, c.name AS category_name, c.color_hex AS color_hex, c.budget_amount AS budget_amount, " +
            "COALESCE(SUM(e.amount), 0.0) AS total_amount, COUNT(e.id) AS transaction_count " +
            "FROM categories c " +
            "INNER JOIN expenses e ON e.category_id = c.id " +
@@ -62,8 +62,14 @@ public interface ExpenseDao {
     @Query("SELECT COALESCE(SUM(amount), 0.0) FROM expenses WHERE date_millis >= :startMillis AND date_millis <= :endMillis")
     LiveData<Double> getTotalSpendForDateRangeLive(long startMillis, long endMillis);
 
+    @Query("SELECT COALESCE(SUM(amount), 0.0) FROM expenses WHERE date_millis >= :startMillis AND date_millis <= :endMillis")
+    double getTotalSpendForDateRangeSync(long startMillis, long endMillis);
+
     @Query("SELECT COUNT(*) FROM expenses WHERE date_millis >= :startMillis AND date_millis <= :endMillis")
     LiveData<Integer> getExpenseCountForDateRangeLive(long startMillis, long endMillis);
+
+    @Query("SELECT COUNT(*) FROM expenses WHERE date_millis >= :startMillis AND date_millis <= :endMillis")
+    int getExpenseCountForDateRangeSync(long startMillis, long endMillis);
 
     @Transaction
     @Query("SELECT e.* FROM expenses e " +

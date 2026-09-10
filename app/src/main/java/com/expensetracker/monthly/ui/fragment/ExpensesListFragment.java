@@ -21,11 +21,15 @@ import com.expensetracker.monthly.data.model.ExpenseWithDetails;
 import com.expensetracker.monthly.databinding.FragmentExpensesListBinding;
 import com.expensetracker.monthly.ui.adapter.ExpenseAdapter;
 import com.expensetracker.monthly.ui.dialog.AddEditExpenseDialogFragment;
+import com.expensetracker.monthly.ui.helper.SwipeToDeleteCallback;
 import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
 import com.expensetracker.monthly.ui.viewmodel.ExpenseViewModel;
+import com.expensetracker.monthly.ui.widget.MonthlyExpenseWidgetProvider;
 import com.expensetracker.monthly.util.CurrencyUtils;
 import com.expensetracker.monthly.util.DateUtils;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 
 import java.util.Calendar;
 import java.util.List;
@@ -118,6 +122,41 @@ public class ExpensesListFragment extends Fragment {
 
         binding.rvExpenses.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvExpenses.setAdapter(expenseAdapter);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(requireContext(), position -> {
+            if (position >= 0 && position < expenseAdapter.getItemCount()) {
+                ExpenseWithDetails item = expenseAdapter.getCurrentList().get(position);
+                handleSwipeDelete(item);
+            }
+        }));
+        itemTouchHelper.attachToRecyclerView(binding.rvExpenses);
+    }
+
+    private void handleSwipeDelete(ExpenseWithDetails item) {
+        if (item == null || item.expense == null) return;
+
+        // Delete from database
+        expenseViewModel.deleteExpense(item.expense, () -> {
+            if (isAdded()) {
+                MonthlyExpenseWidgetProvider.updateAllWidgets(requireContext().getApplicationContext());
+            }
+        });
+
+        // Show Snackbar with UNDO action
+        String message = String.format(getString(R.string.expense_deleted_format), item.expense.getTitle());
+        View anchor = requireActivity().findViewById(R.id.fab_add_expense);
+        Snackbar snackbar = Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG)
+                .setAction(R.string.undo, v -> {
+                    expenseViewModel.insertExpense(item.expense, () -> {
+                        if (isAdded()) {
+                            MonthlyExpenseWidgetProvider.updateAllWidgets(requireContext().getApplicationContext());
+                        }
+                    });
+                });
+        if (anchor != null && anchor.getVisibility() == View.VISIBLE) {
+            snackbar.setAnchorView(anchor);
+        }
+        snackbar.show();
     }
 
     private void setupObservers() {
@@ -171,7 +210,11 @@ public class ExpensesListFragment extends Fragment {
                 .setTitle(R.string.delete_expense)
                 .setMessage(R.string.delete_expense_confirm)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
-                    expenseViewModel.deleteExpense(item.expense, null);
+                    expenseViewModel.deleteExpense(item.expense, () -> {
+                        if (isAdded()) {
+                            MonthlyExpenseWidgetProvider.updateAllWidgets(requireContext().getApplicationContext());
+                        }
+                    });
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();

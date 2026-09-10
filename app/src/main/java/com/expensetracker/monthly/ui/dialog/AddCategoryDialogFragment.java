@@ -21,10 +21,20 @@ import com.expensetracker.monthly.R;
 import com.expensetracker.monthly.data.entity.Category;
 import com.expensetracker.monthly.databinding.DialogAddCategoryBinding;
 import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
+import com.expensetracker.monthly.util.CurrencyUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class AddCategoryDialogFragment extends DialogFragment {
 
     public static final String TAG = "AddCategoryDialog";
+    private static final String ARG_CATEGORY_ID = "arg_cat_id";
+    private static final String ARG_CATEGORY_NAME = "arg_cat_name";
+    private static final String ARG_CATEGORY_COLOR = "arg_cat_color";
+    private static final String ARG_CATEGORY_BUDGET = "arg_cat_budget";
+    private static final String ARG_CATEGORY_ICON = "arg_cat_icon";
 
     private DialogAddCategoryBinding binding;
     private CategoryViewModel categoryViewModel;
@@ -36,15 +46,41 @@ public class AddCategoryDialogFragment extends DialogFragment {
     };
 
     private String selectedColorHex = PALETTE_COLORS[0];
+    private boolean isEditMode = false;
+    private long categoryId = -1;
+    private String initialName;
+    private double initialBudget = 0.0;
+    private String initialIcon = "custom";
 
     public static AddCategoryDialogFragment newInstance() {
         return new AddCategoryDialogFragment();
+    }
+
+    public static AddCategoryDialogFragment newEditInstance(Category category) {
+        AddCategoryDialogFragment fragment = new AddCategoryDialogFragment();
+        Bundle args = new Bundle();
+        args.putLong(ARG_CATEGORY_ID, category.getId());
+        args.putString(ARG_CATEGORY_NAME, category.getName());
+        args.putString(ARG_CATEGORY_COLOR, category.getColorHex());
+        args.putDouble(ARG_CATEGORY_BUDGET, category.getBudgetAmount());
+        args.putString(ARG_CATEGORY_ICON, category.getIconName());
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NORMAL, com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog);
+
+        if (getArguments() != null && getArguments().containsKey(ARG_CATEGORY_ID)) {
+            isEditMode = true;
+            categoryId = getArguments().getLong(ARG_CATEGORY_ID);
+            initialName = getArguments().getString(ARG_CATEGORY_NAME);
+            selectedColorHex = getArguments().getString(ARG_CATEGORY_COLOR, PALETTE_COLORS[0]);
+            initialBudget = getArguments().getDouble(ARG_CATEGORY_BUDGET, 0.0);
+            initialIcon = getArguments().getString(ARG_CATEGORY_ICON, "custom");
+        }
     }
 
     @Nullable
@@ -58,6 +94,25 @@ public class AddCategoryDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         categoryViewModel = new ViewModelProvider(requireActivity()).get(CategoryViewModel.class);
+
+        String currency = CurrencyUtils.getCurrencySymbol(requireContext());
+        binding.tilCatBudget.setPrefixText(currency + " ");
+
+        if (isEditMode) {
+            binding.tvCategoryDialogTitle.setText(R.string.edit_category);
+            if (initialName != null) {
+                binding.etCatName.setText(initialName);
+            }
+            if (initialBudget > 0.0) {
+                if (initialBudget == Math.floor(initialBudget)) {
+                    binding.etCatBudget.setText(String.valueOf((long) initialBudget));
+                } else {
+                    binding.etCatBudget.setText(String.valueOf(initialBudget));
+                }
+            }
+        } else {
+            binding.tvCategoryDialogTitle.setText(R.string.add_category);
+        }
 
         setupColorPalette();
 
@@ -82,9 +137,19 @@ public class AddCategoryDialogFragment extends DialogFragment {
         int padding = (int) (6 * getResources().getDisplayMetrics().density);
         int size = (int) (40 * getResources().getDisplayMetrics().density);
 
-        for (int i = 0; i < PALETTE_COLORS.length; i++) {
-            String colorHex = PALETTE_COLORS[i];
-            int color = Color.parseColor(colorHex);
+        List<String> palette = new ArrayList<>(Arrays.asList(PALETTE_COLORS));
+        if (selectedColorHex != null && !palette.contains(selectedColorHex)) {
+            palette.add(0, selectedColorHex);
+        }
+
+        for (int i = 0; i < palette.size(); i++) {
+            String colorHex = palette.get(i);
+            int color;
+            try {
+                color = Color.parseColor(colorHex);
+            } catch (Exception e) {
+                color = Color.parseColor("#1E88E5");
+            }
 
             RadioButton rb = new RadioButton(requireContext());
             RadioGroup.LayoutParams params = new RadioGroup.LayoutParams(size, size);
@@ -92,7 +157,8 @@ public class AddCategoryDialogFragment extends DialogFragment {
             rb.setLayoutParams(params);
             rb.setButtonTintList(ColorStateList.valueOf(color));
             rb.setId(View.generateViewId());
-            if (i == 0) {
+
+            if (colorHex.equalsIgnoreCase(selectedColorHex)) {
                 rb.setChecked(true);
             }
 
@@ -114,15 +180,56 @@ public class AddCategoryDialogFragment extends DialogFragment {
         }
         binding.tilCatName.setError(null);
 
-        Category category = new Category(name, selectedColorHex, "custom");
-        categoryViewModel.insertCategory(category, categoryId -> {
-            if (isAdded()) {
-                requireActivity().runOnUiThread(() -> {
-                    Toast.makeText(requireContext(), "Category \"" + name + "\" added", Toast.LENGTH_SHORT).show();
-                    dismiss();
-                });
+        String budgetStr = binding.etCatBudget.getText() != null ? binding.etCatBudget.getText().toString().trim() : "";
+        double budgetAmount = 0.0;
+        if (!budgetStr.isEmpty()) {
+            try {
+                budgetAmount = Double.parseDouble(budgetStr);
+                if (budgetAmount < 0.0) {
+                    binding.tilCatBudget.setError(getString(R.string.error_invalid_amount));
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                binding.tilCatBudget.setError(getString(R.string.error_invalid_amount));
+                return;
             }
-        });
+        }
+        binding.tilCatBudget.setError(null);
+
+        if (isEditMode) {
+            Category category = new Category(name, selectedColorHex, initialIcon != null ? initialIcon : "custom");
+            category.setId(categoryId);
+            category.setBudgetAmount(budgetAmount);
+
+            categoryViewModel.updateCategory(category, (success, errorMessage) -> {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (success) {
+                            Toast.makeText(requireContext(), getString(R.string.category_updated, name), Toast.LENGTH_SHORT).show();
+                            dismiss();
+                        } else {
+                            binding.tilCatName.setError(errorMessage != null ? errorMessage : "Failed to update category");
+                        }
+                    });
+                }
+            });
+        } else {
+            Category category = new Category(name, selectedColorHex, "custom");
+            category.setBudgetAmount(budgetAmount);
+
+            categoryViewModel.insertCategory(category, (success, errorMessage) -> {
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (success) {
+                            Toast.makeText(requireContext(), getString(R.string.category_added, name), Toast.LENGTH_SHORT).show();
+                            dismiss();
+                        } else {
+                            binding.tilCatName.setError(errorMessage != null ? errorMessage : "Failed to add category");
+                        }
+                    });
+                }
+            });
+        }
     }
 
     @Override

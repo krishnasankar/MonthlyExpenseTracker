@@ -38,4 +38,10 @@ public interface SubcategoryDao {
 
     @Query("SELECT * FROM subcategories ORDER BY name ASC")
     LiveData<List<Subcategory>> getAllSubcategoriesLive();
+
+    @Query("SELECT COUNT(*) FROM subcategories WHERE category_id = :categoryId AND LOWER(name) = LOWER(:name) AND id != :excludeId")
+    int countSubcategoriesByNameExcludingId(long categoryId, String name, long excludeId);
+
+    @Query("SELECT COUNT(*) FROM subcategories WHERE category_id = :categoryId AND LOWER(name) = LOWER(:name)")
+    int countSubcategoriesByName(long categoryId, String name);
 }

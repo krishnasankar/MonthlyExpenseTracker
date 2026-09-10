@@ -5,7 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
     android:orientation="vertical"
+    android:paddingHorizontal="6dp"
     android:paddingVertical="8dp">
 
     <LinearLayout
@@ -27,6 +31,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
             android:textColor="@color/text_primary"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -36,19 +42,20 @@
             android:id="@+id/tv_category_percentage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
+            android:layout_marginEnd="8dp"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            tools:text="35.4%" />
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="64%" />
 
         <TextView
             android:id="@+id/tv_category_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
-            tools:text="$420.50" />
+            tools:text="$420.50 / $500.00" />
     </LinearLayout>
 
     <!-- Progress Bar -->
@@ -58,7 +65,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         app:indicatorColor="@color/primary"
-        app:trackColor="#E0E0E0"
+        app:trackColor="@color/card_border"
         app:trackCornerRadius="4dp"
         app:trackThickness="6dp"
         tools:progress="35" />

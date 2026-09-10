@@ -45,13 +45,22 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="manage_categories_title">Categories &amp; Subcategories</string>
-    <string name="manage_categories_subtitle">Add or remove custom categories and subcategories</string>
+    <string name="manage_categories_subtitle">Add, edit, or remove custom categories and subcategories</string>
     <string name="add_category">Add Category</string>
+    <string name="edit_category">Edit Category</string>
     <string name="add_subcategory">Add Subcategory</string>
+    <string name="edit_subcategory">Edit Subcategory</string>
+    <string name="edit">Edit</string>
     <string name="category_name_label">Category Name</string>
     <string name="category_name_hint">e.g. Health &amp; Fitness</string>
     <string name="subcategory_name_label">Subcategory Name</string>
     <string name="subcategory_name_hint">e.g. Pharmacy</string>
+    <string name="category_added">Category \"%1$s\" added</string>
+    <string name="category_updated">Category \"%1$s\" updated</string>
+    <string name="subcategory_added">Subcategory \"%1$s\" added</string>
+    <string name="subcategory_updated">Subcategory \"%1$s\" updated</string>
+    <string name="category_name_exists">A category with this name already exists.</string>
+    <string name="subcategory_name_exists">A subcategory with this name already exists in this category.</string>
     <string name="delete_category_confirm">Are you sure you want to delete category \"%1$s\"?</string>
     <string name="delete_subcategory_confirm">Are you sure you want to delete subcategory \"%1$s\"?</string>
     <string name="cannot_delete_category_title">Cannot Delete Category</string>
@@ -73,4 +82,48 @@
     <string name="app_version">Version 1.0.0</string>
     <string name="app_badge_offline">100% Offline</string>
     <string name="app_badge_private">Privacy Focused</string>
+
+    <!-- Budgeting & Pacing -->
+    <string name="monthly_budget">Monthly Budget</string>
+    <string name="monthly_budget_desc">Track spending pace and safe daily limits</string>
+    <string name="set_budget">Set Budget</string>
+    <string name="edit_budget">Edit Budget</string>
+    <string name="set_monthly_budget">Set Monthly Budget</string>
+    <string name="budget_prompt_title">Track Your Monthly Budget</string>
+    <string name="budget_prompt_subtitle">Set a spending target to see live pacing, remaining balance, and safe daily limits.</string>
+    <string name="budget_spent">Spent</string>
+    <string name="budget_remaining">Remaining</string>
+    <string name="budget_over">Over Budget</string>
+    <string name="safe_daily_spend">Safe Daily Spend</string>
+    <string name="days_remaining_format">%1$d days left</string>
+    <string name="day_remaining_single">1 day left</string>
+    <string name="budget_enter_amount_hint">e.g. 50000</string>
+    <string name="remove_budget">Remove Budget</string>
+    <string name="remove_budget_confirm">Are you sure you want to remove your monthly budget?</string>
+    <string name="budget_updated">Monthly budget updated</string>
+    <string name="budget_removed">Monthly budget removed</string>
+
+    <!-- Swipe Actions -->
+    <string name="expense_deleted_format">Deleted \"%1$s\"</string>
+    <string name="undo">UNDO</string>
+    <string name="swipe_to_delete">Swipe to delete</string>
+
+    <!-- Widget -->
+    <string name="widget_name">Monthly Expense</string>
+    <string name="widget_description">Quick glance at monthly spending, budget progress, and 1-tap expense logging.</string>
+    <string name="widget_quick_add">+ Expense</string>
+    <string name="widget_no_budget">No budget set</string>
+
+    <!-- Category Budgets -->
+    <string name="category_budget">Category Budget</string>
+    <string name="set_category_budget">Set Category Budget</string>
+    <string name="edit_category_budget">Edit Category Budget</string>
+    <string name="category_budget_subtitle">Monthly spending limit for %1$s</string>
+    <string name="category_budget_optional">Monthly Budget (Optional)</string>
+    <string name="remove_category_budget_confirm">Are you sure you want to remove the budget for category \"%1$s\"?</string>
+    <string name="category_budget_updated">Budget updated for %1$s</string>
+    <string name="category_budget_removed">Budget removed for %1$s</string>
+    <string name="category_budget_badge">Limit: %1$s</string>
+    <string name="category_no_budget_badge">+ Budget</string>
+    <string name="category_breakdown_hint">Tap a category to set or edit its monthly budget</string>
 </resources>

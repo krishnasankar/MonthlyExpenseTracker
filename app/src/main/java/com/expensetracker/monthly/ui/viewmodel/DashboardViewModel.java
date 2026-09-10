@@ -34,6 +34,7 @@ public class DashboardViewModel extends AndroidViewModel {
         Calendar current = Calendar.getInstance();
         current.set(Calendar.DAY_OF_MONTH, 1);
         selectedMonth.setValue(current);
+        refreshBudget();
 
         totalSpend = Transformations.switchMap(selectedMonth, month -> {
             long start = DateUtils.getStartOfMonthMillis(month);
@@ -104,5 +105,26 @@ public class DashboardViewModel extends AndroidViewModel {
 
     public LiveData<List<ExpenseWithDetails>> getRecentExpenses() {
         return recentExpenses;
+    }
+
+    private final MutableLiveData<Double> monthlyBudget = new MutableLiveData<>();
+
+    public LiveData<Double> getMonthlyBudget() {
+        return monthlyBudget;
+    }
+
+    public void refreshBudget() {
+        double budget = com.expensetracker.monthly.util.BudgetUtils.getMonthlyBudget(getApplication());
+        monthlyBudget.setValue(budget);
+    }
+
+    public void setMonthlyBudget(double budget) {
+        com.expensetracker.monthly.util.BudgetUtils.setMonthlyBudget(getApplication(), budget);
+        monthlyBudget.setValue(budget);
+    }
+
+    public void clearMonthlyBudget() {
+        com.expensetracker.monthly.util.BudgetUtils.clearMonthlyBudget(getApplication());
+        monthlyBudget.setValue(0.0);
     }
 }

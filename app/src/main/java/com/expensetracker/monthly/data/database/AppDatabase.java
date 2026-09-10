@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 
 @Database(
     entities = {Category.class, Subcategory.class, Expense.class},
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -29,6 +29,13 @@ public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
     public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
+    public static final androidx.room.migration.Migration MIGRATION_2_3 = new androidx.room.migration.Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE categories ADD COLUMN budget_amount REAL NOT NULL DEFAULT 0.0");
+        }
+    };
 
     public abstract CategoryDao categoryDao();
     public abstract SubcategoryDao subcategoryDao();
@@ -43,6 +50,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             DATABASE_NAME
                     )
+                    .addMigrations(MIGRATION_2_3)
                     .fallbackToDestructiveMigration()
                     .addCallback(sRoomDatabaseCallback)
                     .build();

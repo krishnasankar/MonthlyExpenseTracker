@@ -22,10 +22,15 @@ import com.expensetracker.monthly.ui.MainActivity;
 import com.expensetracker.monthly.ui.adapter.CategorySummaryAdapter;
 import com.expensetracker.monthly.ui.adapter.ExpenseAdapter;
 import com.expensetracker.monthly.ui.dialog.AddEditExpenseDialogFragment;
+import com.expensetracker.monthly.ui.dialog.SetBudgetDialogFragment;
+import com.expensetracker.monthly.ui.dialog.SetCategoryBudgetDialogFragment;
 import com.expensetracker.monthly.ui.viewmodel.DashboardViewModel;
 import com.expensetracker.monthly.ui.viewmodel.ExpenseViewModel;
+import com.expensetracker.monthly.ui.widget.MonthlyExpenseWidgetProvider;
+import com.expensetracker.monthly.util.BudgetUtils;
 import com.expensetracker.monthly.util.CurrencyUtils;
 import com.expensetracker.monthly.util.DateUtils;
+import androidx.core.content.ContextCompat;
 
 import java.util.Calendar;
 import java.util.List;
@@ -57,6 +62,7 @@ public class DashboardFragment extends Fragment {
         expenseViewModel = new ViewModelProvider(requireActivity()).get(ExpenseViewModel.class);
 
         setupMonthNavigation();
+        setupBudgetCard();
         setupRecyclerViews();
         setupChart();
         setupObservers();
@@ -75,6 +81,8 @@ public class DashboardFragment extends Fragment {
         if (recentExpenseAdapter != null) {
             recentExpenseAdapter.setCurrencySymbol(currentCurrency);
         }
+        dashboardViewModel.refreshBudget();
+        updateBudgetCard();
     }
 
     private void setupMonthNavigation() {
@@ -97,11 +105,101 @@ public class DashboardFragment extends Fragment {
         dialog.show();
     }
 
+    private void setupBudgetCard() {
+        binding.btnSetBudget.setOnClickListener(v -> showBudgetDialog());
+        binding.btnEditBudget.setOnClickListener(v -> showBudgetDialog());
+    }
+
+    private void showBudgetDialog() {
+        SetBudgetDialogFragment dialog = SetBudgetDialogFragment.newInstance();
+        dialog.setOnBudgetChangeListener(() -> {
+            dashboardViewModel.refreshBudget();
+            updateBudgetCard();
+        });
+        dialog.show(getChildFragmentManager(), SetBudgetDialogFragment.TAG);
+    }
+
+    private void updateBudgetCard() {
+        if (binding == null || !isAdded()) return;
+        Double budgetObj = dashboardViewModel.getMonthlyBudget().getValue();
+        double budget = budgetObj != null ? budgetObj : 0.0;
+        currentCurrency = CurrencyUtils.getCurrencySymbol(requireContext());
+
+        if (budget <= 0.0) {
+            binding.layoutBudgetPrompt.setVisibility(View.VISIBLE);
+            binding.layoutBudgetSet.setVisibility(View.GONE);
+            return;
+        }
+
+        binding.layoutBudgetPrompt.setVisibility(View.GONE);
+        binding.layoutBudgetSet.setVisibility(View.VISIBLE);
+
+        int percent = BudgetUtils.calculatePercentage(budget, currentTotalSpend);
+        binding.progressBudget.setProgress(Math.min(100, percent));
+        binding.tvBudgetPercent.setText(percent + "% spent");
+
+        int progressColor;
+        if (percent >= 100) {
+            progressColor = ContextCompat.getColor(requireContext(), R.color.budget_error);
+        } else if (percent >= 80) {
+            progressColor = ContextCompat.getColor(requireContext(), R.color.budget_warning);
+        } else {
+            progressColor = ContextCompat.getColor(requireContext(), R.color.primary);
+        }
+        binding.progressBudget.setIndicatorColor(progressColor);
+        binding.tvBudgetPercent.setTextColor(progressColor);
+
+        binding.tvBudgetSpentVal.setText(CurrencyUtils.formatAmount(currentTotalSpend, currentCurrency));
+        binding.tvBudgetTotalVal.setText(CurrencyUtils.formatAmount(budget, currentCurrency));
+
+        double remaining = BudgetUtils.calculateRemaining(budget, currentTotalSpend);
+        if (remaining >= 0) {
+            binding.tvBudgetRemainingLabel.setText(R.string.budget_remaining);
+            binding.tvBudgetRemainingVal.setText(CurrencyUtils.formatAmount(remaining, currentCurrency));
+            binding.tvBudgetRemainingVal.setTextColor(ContextCompat.getColor(requireContext(), R.color.budget_safe));
+        } else {
+            binding.tvBudgetRemainingLabel.setText(R.string.budget_over);
+            binding.tvBudgetRemainingVal.setText("+" + CurrencyUtils.formatAmount(Math.abs(remaining), currentCurrency));
+            binding.tvBudgetRemainingVal.setTextColor(ContextCompat.getColor(requireContext(), R.color.budget_error));
+        }
+
+        Calendar cal = dashboardViewModel.getSelectedMonth().getValue();
+        int daysLeft = BudgetUtils.getDaysRemainingInMonth(cal);
+        double safeDaily = BudgetUtils.calculateDailySafeSpend(remaining, cal);
+
+        if (daysLeft <= 0) {
+            binding.layoutSafeDailySpend.setVisibility(View.GONE);
+        } else {
+            binding.layoutSafeDailySpend.setVisibility(View.VISIBLE);
+            if (remaining <= 0) {
+                binding.tvSafeDailySpendVal.setText(CurrencyUtils.formatAmount(0.0, currentCurrency) + " / day");
+                binding.tvSafeDailySpendVal.setTextColor(ContextCompat.getColor(requireContext(), R.color.budget_error));
+            } else {
+                binding.tvSafeDailySpendVal.setText(CurrencyUtils.formatAmount(safeDaily, currentCurrency) + " / day");
+                binding.tvSafeDailySpendVal.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary));
+            }
+            if (daysLeft == 1) {
+                binding.tvDaysRemainingBadge.setText(R.string.day_remaining_single);
+            } else {
+                binding.tvDaysRemainingBadge.setText(String.format(getString(R.string.days_remaining_format), daysLeft));
+            }
+        }
+    }
+
     private void setupRecyclerViews() {
         currentCurrency = CurrencyUtils.getCurrencySymbol(requireContext());
 
         // Category breakdown adapter
         categorySummaryAdapter = new CategorySummaryAdapter();
+        categorySummaryAdapter.setOnCategoryClickListener(item -> {
+            SetCategoryBudgetDialogFragment dialog = SetCategoryBudgetDialogFragment.newInstance(
+                    item.categoryId,
+                    item.categoryName,
+                    item.colorHex,
+                    item.budgetAmount
+            );
+            dialog.show(getChildFragmentManager(), SetCategoryBudgetDialogFragment.TAG);
+        });
         binding.rvCategoryBreakdown.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvCategoryBreakdown.setAdapter(categorySummaryAdapter);
 
@@ -133,6 +231,7 @@ public class DashboardFragment extends Fragment {
         dashboardViewModel.getSelectedMonth().observe(getViewLifecycleOwner(), calendar -> {
             if (calendar != null) {
                 binding.tvSelectedMonth.setText(DateUtils.formatMonthYear(calendar));
+                updateBudgetCard();
             }
         });
 
@@ -146,6 +245,12 @@ public class DashboardFragment extends Fragment {
             int days = (cal != null) ? DateUtils.getDaysInMonth(cal) : 30;
             double dailyAvg = (days > 0) ? (currentTotalSpend / days) : 0.0;
             binding.tvDailyAverage.setText(CurrencyUtils.formatAmount(dailyAvg, currentCurrency));
+
+            updateBudgetCard();
+        });
+
+        dashboardViewModel.getMonthlyBudget().observe(getViewLifecycleOwner(), budget -> {
+            updateBudgetCard();
         });
 
         dashboardViewModel.getExpenseCount().observe(getViewLifecycleOwner(), count -> {
@@ -188,7 +293,11 @@ public class DashboardFragment extends Fragment {
                 .setTitle(R.string.delete_expense)
                 .setMessage(R.string.delete_expense_confirm)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
-                    expenseViewModel.deleteExpense(item.expense, null);
+                    expenseViewModel.deleteExpense(item.expense, () -> {
+                        if (isAdded()) {
+                            MonthlyExpenseWidgetProvider.updateAllWidgets(requireContext().getApplicationContext());
+                        }
+                    });
                 })
                 .setNegativeButton(R.string.cancel, null)
                 .show();

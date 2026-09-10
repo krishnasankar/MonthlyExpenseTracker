@@ -28,10 +28,14 @@ public class Category {
     @ColumnInfo(name = "icon_name")
     private String iconName;
 
+    @ColumnInfo(name = "budget_amount", defaultValue = "0.0")
+    private double budgetAmount = 0.0;
+
     public Category(@NonNull String name, @NonNull String colorHex, String iconName) {
         this.name = name;
         this.colorHex = colorHex;
         this.iconName = iconName;
+        this.budgetAmount = 0.0;
     }
 
     public long getId() {
@@ -66,6 +70,14 @@ public class Category {
 
     public void setIconName(String iconName) {
         this.iconName = iconName;
+    }
+
+    public double getBudgetAmount() {
+        return budgetAmount;
+    }
+
+    public void setBudgetAmount(double budgetAmount) {
+        this.budgetAmount = budgetAmount;
     }
 
     @Override

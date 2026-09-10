@@ -32,15 +32,36 @@
                 android:layout_marginEnd="10dp"
                 android:background="@color/primary" />
 
-            <TextView
-                android:id="@+id/tv_category_name"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                tools:text="Food &amp; Dining" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_category_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="Food &amp; Dining" />
+
+                <TextView
+                    android:id="@+id/tv_category_budget_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:background="@drawable/bg_category_budget_badge"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    tools:text="Limit: ₹5,000" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_subcategory"
@@ -51,6 +72,15 @@
                 android:text="+ Subcategory"
                 android:textColor="@color/primary"
                 android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btn_edit_category"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/edit_category"
+                android:src="@drawable/ic_edit"
+                app:tint="@color/text_secondary" />
 
             <ImageButton
                 android:id="@+id/btn_delete_category"

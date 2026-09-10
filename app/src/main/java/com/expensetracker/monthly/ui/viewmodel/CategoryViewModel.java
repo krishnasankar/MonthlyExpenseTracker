@@ -42,6 +42,14 @@ public class CategoryViewModel extends AndroidViewModel {
         repository.insertCategory(category, listener);
     }
 
+    public void insertCategory(Category category, ExpenseRepository.OnOperationResultListener listener) {
+        repository.insertCategory(category, listener);
+    }
+
+    public void updateCategory(Category category, ExpenseRepository.OnOperationResultListener listener) {
+        repository.updateCategory(category, listener);
+    }
+
     public void deleteCategory(long categoryId, ExpenseRepository.OnDeleteCheckListener listener) {
         repository.deleteCategory(categoryId, listener);
     }
@@ -50,7 +58,19 @@ public class CategoryViewModel extends AndroidViewModel {
         repository.insertSubcategory(subcategory, onComplete);
     }
 
+    public void insertSubcategory(Subcategory subcategory, ExpenseRepository.OnOperationResultListener listener) {
+        repository.insertSubcategory(subcategory, listener);
+    }
+
+    public void updateSubcategory(Subcategory subcategory, ExpenseRepository.OnOperationResultListener listener) {
+        repository.updateSubcategory(subcategory, listener);
+    }
+
     public void deleteSubcategory(long subcategoryId, ExpenseRepository.OnDeleteCheckListener listener) {
         repository.deleteSubcategory(subcategoryId, listener);
+    }
+
+    public void updateCategoryBudget(long categoryId, double budget, Runnable onComplete) {
+        repository.updateCategoryBudget(categoryId, budget, onComplete);
     }
 }

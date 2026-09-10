@@ -17,6 +17,9 @@ import com.expensetracker.monthly.ui.fragment.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String ACTION_OPEN_ADD_EXPENSE = "com.expensetracker.monthly.ACTION_OPEN_ADD_EXPENSE";
+    public static final String EXTRA_OPEN_ADD_EXPENSE = "extra_open_add_expense";
+
     private ActivityMainBinding binding;
 
     private final DashboardFragment dashboardFragment = new DashboardFragment();
@@ -37,6 +40,26 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             switchFragment(dashboardFragment, getString(R.string.nav_dashboard));
+        }
+
+        handleWidgetIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(android.content.Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleWidgetIntent(intent);
+    }
+
+    private void handleWidgetIntent(android.content.Intent intent) {
+        if (intent == null) return;
+        if (ACTION_OPEN_ADD_EXPENSE.equals(intent.getAction()) ||
+                intent.getBooleanExtra(EXTRA_OPEN_ADD_EXPENSE, false)) {
+            intent.removeExtra(EXTRA_OPEN_ADD_EXPENSE);
+            intent.setAction(null);
+            AddEditExpenseDialogFragment.newInstance(null)
+                    .show(getSupportFragmentManager(), AddEditExpenseDialogFragment.TAG);
         }
     }
 

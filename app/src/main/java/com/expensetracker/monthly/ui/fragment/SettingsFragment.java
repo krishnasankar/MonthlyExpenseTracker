@@ -20,8 +20,12 @@ import com.expensetracker.monthly.databinding.FragmentSettingsBinding;
 import com.expensetracker.monthly.ui.adapter.CategoryExpandableAdapter;
 import com.expensetracker.monthly.ui.dialog.AddCategoryDialogFragment;
 import com.expensetracker.monthly.ui.dialog.AddSubcategoryDialogFragment;
+import com.expensetracker.monthly.ui.dialog.SetBudgetDialogFragment;
+import com.expensetracker.monthly.ui.dialog.SetCategoryBudgetDialogFragment;
 import com.expensetracker.monthly.ui.viewmodel.CategoryViewModel;
+import com.expensetracker.monthly.util.BudgetUtils;
 import com.expensetracker.monthly.util.CurrencyUtils;
+import androidx.core.content.ContextCompat;
 
 public class SettingsFragment extends Fragment {
 
@@ -44,8 +48,15 @@ public class SettingsFragment extends Fragment {
 
         setupCurrencyPicker();
         setupThemePicker();
+        setupBudgetSetting();
         setupCategoryManagement();
         setupObservers();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateBudgetDisplay();
     }
 
     private void setupCurrencyPicker() {
@@ -81,9 +92,33 @@ public class SettingsFragment extends Fragment {
                     symbol = "¥";
                 }
                 CurrencyUtils.setCurrencySymbol(requireContext(), symbol);
+                updateBudgetDisplay();
                 Toast.makeText(requireContext(), "Currency set to " + symbol, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void setupBudgetSetting() {
+        binding.layoutSettingsBudget.setOnClickListener(v -> showBudgetDialog());
+        updateBudgetDisplay();
+    }
+
+    private void updateBudgetDisplay() {
+        if (binding == null || !isAdded()) return;
+        if (BudgetUtils.hasMonthlyBudget(requireContext())) {
+            double budget = BudgetUtils.getMonthlyBudget(requireContext());
+            binding.tvSettingsBudgetVal.setText(CurrencyUtils.formatAmount(budget, requireContext()));
+            binding.tvSettingsBudgetVal.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary));
+        } else {
+            binding.tvSettingsBudgetVal.setText(R.string.set_budget);
+            binding.tvSettingsBudgetVal.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_tertiary));
+        }
+    }
+
+    private void showBudgetDialog() {
+        SetBudgetDialogFragment dialog = SetBudgetDialogFragment.newInstance();
+        dialog.setOnBudgetChangeListener(this::updateBudgetDisplay);
+        dialog.show(getChildFragmentManager(), SetBudgetDialogFragment.TAG);
     }
 
     private void setupThemePicker() {
@@ -127,13 +162,39 @@ public class SettingsFragment extends Fragment {
             }
 
             @Override
+            public void onEditCategory(Category category) {
+                AddCategoryDialogFragment.newEditInstance(category)
+                        .show(getChildFragmentManager(), AddCategoryDialogFragment.TAG);
+            }
+
+            @Override
             public void onDeleteCategory(Category category) {
                 confirmDeleteCategory(category);
             }
 
             @Override
+            public void onEditSubcategory(Category category, Subcategory subcategory) {
+                AddSubcategoryDialogFragment.newEditInstance(
+                        subcategory.getId(),
+                        category.getId(),
+                        subcategory.getName(),
+                        category.getName()
+                ).show(getChildFragmentManager(), AddSubcategoryDialogFragment.TAG);
+            }
+
+            @Override
             public void onDeleteSubcategory(Subcategory subcategory) {
                 confirmDeleteSubcategory(subcategory);
+            }
+
+            @Override
+            public void onEditCategoryBudget(Category category) {
+                SetCategoryBudgetDialogFragment.newInstance(
+                        category.getId(),
+                        category.getName(),
+                        category.getColorHex(),
+                        category.getBudgetAmount()
+                ).show(getChildFragmentManager(), SetCategoryBudgetDialogFragment.TAG);
             }
         });
 

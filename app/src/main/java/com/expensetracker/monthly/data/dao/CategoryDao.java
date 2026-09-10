@@ -32,6 +32,9 @@ public interface CategoryDao {
     @Query("DELETE FROM categories WHERE id = :id")
     void deleteById(long id);
 
+    @Query("UPDATE categories SET budget_amount = :budgetAmount WHERE id = :categoryId")
+    void updateCategoryBudget(long categoryId, double budgetAmount);
+
     @Query("SELECT * FROM categories ORDER BY name ASC")
     LiveData<List<Category>> getAllCategoriesLive();
 
@@ -51,4 +54,10 @@ public interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     int getCategoryCount();
+
+    @Query("SELECT COUNT(*) FROM categories WHERE LOWER(name) = LOWER(:name) AND id != :excludeId")
+    int countCategoriesByNameExcludingId(String name, long excludeId);
+
+    @Query("SELECT COUNT(*) FROM categories WHERE LOWER(name) = LOWER(:name)")
+    int countCategoriesByName(String name);
 }

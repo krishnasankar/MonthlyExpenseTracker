@@ -140,9 +140,9 @@ com.expensetracker.monthly
 │   ├── chart
 │   │   └── DonutChartView.java       # Custom Canvas-rendered interactive donut chart
 │   ├── dialog
-│   │   ├── AddCategoryDialogFragment.java     # Dialog for creating categories
+│   │   ├── AddCategoryDialogFragment.java     # Dialog for creating and editing categories
 │   │   ├── AddEditExpenseDialogFragment.java  # Dialog for adding/editing expenses
-│   │   └── AddSubcategoryDialogFragment.java  # Dialog for adding subcategories
+│   │   └── AddSubcategoryDialogFragment.java  # Dialog for creating and editing subcategories
 │   ├── fragment
 │   │   ├── DashboardFragment.java    # KPI cards, charts, recent transactions
 │   │   ├── ExpensesListFragment.java # Filterable, searchable expense list
